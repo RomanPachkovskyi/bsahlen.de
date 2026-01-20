@@ -1,0 +1,18 @@
+// Nested Accordion.
+.elementor-widget-n-accordion {
+	// Base Theme Widget Styles.
+	&.vamtam-has-theme-widget-styles {
+
+		&.vamtam-has-icon-theme-styles {
+			.e-n-accordion-item-title-icon {
+				padding: 8px;
+				background-color: var(--vamtam-n-accordion-icon-bg-color, var(--e-global-color-vamtam_accent_5, #fff));
+				border-radius: 50%;
+			}
+		}
+
+		&.title-forward .e-n-accordion-item-title {
+			z-index: 10;
+		}
+	}
+}

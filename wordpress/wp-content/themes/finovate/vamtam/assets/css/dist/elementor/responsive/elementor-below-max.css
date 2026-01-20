@@ -1,0 +1,24 @@
+body.responsive-layout #scroll-to-top {
+  bottom: 20px;
+}
+body.responsive-layout .page-wrapper {
+  flex-direction: column;
+}
+.woocommerce-demo-store .demo_store .woocommerce-store-notice__dismiss-link::before {
+  position: absolute;
+  right: 20px;
+}
+/* --- Widgets --- */
+.elementor-widget-button.vamtam-tablet-content-align-start .elementor-button-text {
+  text-align: start;
+}
+.elementor-widget-button.vamtam-tablet-content-align-end .elementor-button-text {
+  text-align: end;
+}
+.elementor-widget-button.vamtam-tablet-content-align-center .elementor-button-text {
+  text-align: center;
+}
+.elementor-widget-button.vamtam-tablet-content-align-space-between .elementor-button-text {
+  text-align: justify;
+}
+/*# sourceMappingURL=elementor-below-max.css.map */

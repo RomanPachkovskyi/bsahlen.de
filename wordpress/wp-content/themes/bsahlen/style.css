@@ -1,0 +1,161 @@
+/*
+Theme Name: BSahlen
+Description: Child theme for Finovate with custom CSS/JS
+Author: Roman
+Template: finovate
+Version: 1.0
+*/
+
+/* ===== HOVER UNDERLINE - ICON LIST ===== */
+.hover-underline .elementor-icon-list-text,
+.hover-underline-thick .elementor-icon-list-text {
+  text-decoration: underline !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hover-underline .elementor-icon-list-item:hover .elementor-icon-list-text {
+  text-decoration-color: currentColor !important;
+}
+
+/* Thick version for icon list */
+.hover-underline-thick .elementor-icon-list-text {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.hover-underline-thick .elementor-icon-list-item:hover .elementor-icon-list-text {
+  text-decoration-color: currentColor !important;
+}
+
+/* ===== HOVER UNDERLINE - HEADINGS ===== */
+.hover-heading,
+.hover-heading-thick,
+.hover-heading a,
+.hover-heading-thick a {
+  text-decoration: underline !important;
+  text-decoration-color: transparent !important;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.hover-heading:hover,
+.hover-heading:hover a {
+  text-decoration-color: currentColor !important;
+}
+
+/* Thick version for headings */
+.hover-heading-thick,
+.hover-heading-thick a {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.hover-heading-thick:hover,
+.hover-heading-thick:hover a {
+  text-decoration-color: currentColor !important;
+}
+
+/* ===== MEGA MENU OVERLAY ===== */
+.bsa-mega-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 900;
+}
+
+/* Show overlay when mega menu is open */
+body.bsa-mega-open .bsa-mega-overlay {
+  opacity: 1;
+}
+
+/* ===== HEADER Z-INDEX ===== */
+.elementor-location-header {
+  position: relative;
+  z-index: 1001;
+  background-color: transparent;
+}
+
+.header-background-section {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.main-nav-wrapper {
+  position: relative;
+  z-index: 1002;
+}
+
+.blur-background {
+  position: relative;
+  z-index: 1003;
+}
+
+/* ===== STICKY HEADER ===== */
+.vamtam-sticky-header {
+  position: relative;
+  z-index: 1001;
+  background-color: transparent;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Sticky header when scrolled */
+.vamtam-sticky-header.vamtam-sticky-header--fixed-shown {
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* Reset sticky header style when mega menu is open */
+body.bsa-mega-open .vamtam-sticky-header.vamtam-sticky-header--fixed-shown {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* ===== MEGA MENU TEXT COLORS ===== */
+
+/* All menu items - light color when mega open */
+body.bsa-mega-open .e-n-menu-title-text {
+  color: #f7f5f1 !important;
+  transition: color 0.2s ease;
+}
+
+/* Active menu item (whose mega menu is open) - ALWAYS dark text, NO underline */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text {
+  color: #233D3A !important;
+  text-decoration: none !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Active menu item - white pill background */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container {
+  background-color: #ffffff !important;
+  border-radius: 50px;
+}
+
+/* Remove Elementor hover effects on active item */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container::before,
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container::after,
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text::before,
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Hover on OTHER menu items (not active) - dark color */
+body.bsa-mega-open .e-n-menu-item:not(.bsa-mega-active) .e-n-menu-title-container:hover .e-n-menu-title-text {
+  color: #233D3A !important;
+}
+
+/* ===== MEGA MENU CONTENT POSITION ===== */
+.e-n-menu-item .e-n-menu-content > .elementor-element {
+  margin-top: -120px !important;
+}

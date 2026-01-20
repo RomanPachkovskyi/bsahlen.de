@@ -1,0 +1,361 @@
+# Copyright (C) 2025 VamTam
+# This file is distributed under the same license as the VamTam Elementor Integration (Finovate) package.
+msgid ""
+msgstr ""
+"Project-Id-Version: VamTam Elementor Integration (Finovate) 1.0.9\n"
+"Report-Msgid-Bugs-To: "
+"https://wordpress.org/support/plugin/vamtam-elementor-integration-finovate\n"
+"POT-Creation-Date: 2025-10-15 08:09:21+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2025-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: grunt-wp-i18n 1.0.4\n"
+
+#: includes/dynamic-tags/vamtam-author-profile-picture.php:29
+msgid "Author Profile Picture (Large)"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:31
+#: includes/dynamic-tags/vamtam-popup.php:60
+msgid "Popup"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:46
+msgid "Action"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:50
+msgid "Open Popup"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:51
+msgid "Close Popup"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:52
+msgid "Toggle Popup"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:85
+msgid "Don't Show Again"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:96
+msgid "Align With Parent"
+msgstr ""
+
+#: includes/dynamic-tags/vamtam-popup.php:105
+msgid ""
+"<i style=\"font-size:11px;line-height:1.4;color:#a4afb7;\">On desktop, the "
+"popup will be positioned relative to it's parent.</i>"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:19
+msgid "Theme Settings"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:49
+msgid ""
+"<h3><strong>After saving your changes, a page refresh will be needed for "
+"the changes to take effect.</strong/></h3>"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:68
+msgid "Widgets"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:77
+msgid ""
+"<h3>Using the switches below, you can easily toggle the theme's custom "
+"implementation for a particular widget type on and off.</h3>"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:85
+msgid "Enable All Widget Modifications"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:98
+msgid "Disable All Widget Modifications"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:151
+msgid "General"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:160
+msgid "Font Smoothing"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:161
+msgid "Toggles font-smoothing (added by the theme) for the whole site."
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:163
+msgid "On"
+msgstr ""
+
+#: includes/site-settings/theme-site-settings.php:164
+msgid "Off"
+msgstr ""
+
+#: includes/widgets/button.php:37
+msgid "Icon"
+msgstr ""
+
+#: includes/widgets/button.php:47 includes/widgets/button.php:311
+msgid "Use Theme Icon Styles"
+msgstr ""
+
+#: includes/widgets/button.php:72 includes/widgets/form.php:29
+#: includes/widgets/loop-grid.php:32
+msgid "Use Theme Hover Animation"
+msgstr ""
+
+#: includes/widgets/button.php:88
+msgid "Icon Outside Button"
+msgstr ""
+
+#: includes/widgets/button.php:112
+msgid "Size"
+msgstr ""
+
+#: includes/widgets/button.php:135
+msgid "Normal"
+msgstr ""
+
+#: includes/widgets/button.php:144 includes/widgets/button.php:182
+msgid "Color"
+msgstr ""
+
+#: includes/widgets/button.php:158 includes/widgets/button.php:196
+msgid "Background Color"
+msgstr ""
+
+#: includes/widgets/button.php:173
+msgid "Hover"
+msgstr ""
+
+#: includes/widgets/button.php:211
+msgid "Border Color"
+msgstr ""
+
+#: includes/widgets/button.php:225
+msgid "Transition Duration"
+msgstr ""
+
+#: includes/widgets/button.php:260
+msgid "Border Radius"
+msgstr ""
+
+#: includes/widgets/button.php:274
+msgid "Margin"
+msgstr ""
+
+#: includes/widgets/button.php:294
+msgid "Padding"
+msgstr ""
+
+#: includes/widgets/container.php:79
+msgid "Theme Sticky Header (Desktop)"
+msgstr ""
+
+#: includes/widgets/container.php:91
+msgid "Header Is Transparent"
+msgstr ""
+
+#: includes/widgets/container.php:104
+msgid "Offset (px)"
+msgstr ""
+
+#: includes/widgets/container.php:121
+msgid "Offset on Sticky"
+msgstr ""
+
+#: includes/widgets/container.php:122
+msgid ""
+"Offset will be applied to the sticky state of the header as well. When "
+"disabled, offset is only applied on the initial position of the sticky "
+"header."
+msgstr ""
+
+#: includes/widgets/container.php:148
+msgid "Clip Path"
+msgstr ""
+
+#: includes/widgets/container.php:158
+msgid "Use Clip Path"
+msgstr ""
+
+#: includes/widgets/container.php:168
+msgid "Type"
+msgstr ""
+
+#: includes/widgets/container.php:171
+msgid "None"
+msgstr ""
+
+#: includes/widgets/container.php:172
+msgid "Top Left"
+msgstr ""
+
+#: includes/widgets/container.php:173
+msgid "Top Right"
+msgstr ""
+
+#: includes/widgets/container.php:174
+msgid "Top Center"
+msgstr ""
+
+#: includes/widgets/container.php:175
+msgid "Bottom Left"
+msgstr ""
+
+#: includes/widgets/container.php:176
+msgid "Bottom Right"
+msgstr ""
+
+#: includes/widgets/container.php:177
+msgid "Bottom Center"
+msgstr ""
+
+#: includes/widgets/icon-list.php:24 includes/widgets/icon-list.php:48
+#: includes/widgets/nested-accordion.php:34
+msgid "Icon Bg Color"
+msgstr ""
+
+#: includes/widgets/icon.php:23
+msgid "Apply hover colors when hovering over parent"
+msgstr ""
+
+#: includes/widgets/icon.php:24
+msgid ""
+"Add the vamtam-icon-hover-parent class to the chosen parent element. This "
+"option only affects the color and background of the icon, not the animation."
+msgstr ""
+
+#: includes/widgets/nested-accordion.php:23
+msgid "Use Theme Styles"
+msgstr ""
+
+#: includes/widgets/nested-tabs.php:14
+msgid "Use Theme Style"
+msgstr ""
+
+#: includes/widgets/nested-tabs.php:28
+msgid "Headings"
+msgstr ""
+
+#: includes/widgets/nested-tabs.php:40
+msgid "Max Width"
+msgstr ""
+
+#: includes/widgets/nested-tabs.php:62
+msgid "Vertical Spacing"
+msgstr ""
+
+#: includes/widgets/nested-tabs.php:84
+msgid "Horizontal Spacing"
+msgstr ""
+
+#: vamtam-elementor-integration.php:111
+#. translators: 1: Plugin name 2: Elementor
+msgid ""
+"\"%1$s\" plugin requires a compatible VamTam theme to be active, in order "
+"to work."
+msgstr ""
+
+#: vamtam-elementor-integration.php:135
+#. translators: 1: Plugin name 2: Theme name
+msgid ""
+"\"%1$s\" is not compatible with the current theme (%2$s). Please activate a "
+"compatible VamTam theme to use this plugin."
+msgstr ""
+
+#: vamtam-elementor-integration.php:230
+#. translators: 1: Plugin name 2: Elementor
+msgid "\"%1$s\" requires \"%2$s\" to be installed and activated."
+msgstr ""
+
+#: vamtam-elementor-integration.php:231 vamtam-elementor-integration.php:244
+msgid "Vamtam Elementor Integration"
+msgstr ""
+
+#: vamtam-elementor-integration.php:232 vamtam-elementor-integration.php:245
+msgid "Elementor"
+msgstr ""
+
+#: vamtam-elementor-integration.php:243
+#. translators: 1: Plugin name 2: Elementor 3: Required Elementor version
+msgid "\"%1$s\" requires \"%2$s\" version %3$s or greater."
+msgstr ""
+
+#: vamtam-elementor-integration.php:403
+msgid "Additional JS"
+msgstr ""
+
+#: vamtam-elementor-integration.php:436
+msgid "Before </head>"
+msgstr ""
+
+#: vamtam-elementor-integration.php:449
+msgid "After <body>"
+msgstr ""
+
+#: vamtam-elementor-integration.php:462
+msgid "Before </body>"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:35
+msgid ""
+"Only Envato Market clients with a valid purchase code are entitled to "
+"automatic updates. Envato Elements clients must use FTP."
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:104
+msgid " View changelog"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:119
+msgid "Heads up, no valid license found!"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:121
+msgid "Heads up, you're missing out on automatic updates!"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:129
+msgid "Please activate your license to get automatic plugin updates!"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:133
+msgid "Register Now"
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:137
+msgid ""
+"Note: Only Envato Market clients with a valid purchase code are entitled to "
+"automatic updates. Envato Elements clients must use FTP."
+msgstr ""
+
+#: vamtam-updates/class-vamtam-updates.php:147
+msgid "Update Now"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "VamTam Elementor Integration (Finovate)"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://vamtam.com"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Extend the Elementor plugin with widgets and template builder."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "VamTam"
+msgstr ""

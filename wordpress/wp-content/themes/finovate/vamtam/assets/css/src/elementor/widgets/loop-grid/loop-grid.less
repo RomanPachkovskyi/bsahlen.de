@@ -1,0 +1,41 @@
+// Loop Grid.
+.elementor-widget-loop-grid {
+	// Base Theme Widget Styles.
+	&.vamtam-has-theme-widget-styles {
+
+		// Hover Anim
+		&.vamtam-has-btn-hover-anim {
+			.e-loop__load-more .elementor-button {
+				:is( .vamtam-btn-text, .vamtam-btn-text-abs ) {
+					display: block;
+					transition: transform 1s cubic-bezier(.23,1,.32,1);
+				}
+
+				.vamtam-btn-text-wrap {
+					order: 10;
+					overflow: hidden;
+					position: relative;
+				}
+
+				.vamtam-btn-text {
+					position: relative;
+				}
+
+				.vamtam-btn-text-abs {
+					position: absolute;
+					top: 0;
+					transform: translateY(101%);
+				}
+
+				&:hover {
+					.vamtam-btn-text {
+						transform: translate(0px, -101%);
+					}
+					.vamtam-btn-text-abs {
+						transform: translate(0px, 0%);
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,71 @@
+// Nav Menu.
+.elementor-widget-nav-menu {
+	// Base Theme Widget Styles.
+	&.vamtam-has-theme-widget-styles {
+		&.vamtam-has-contain-link {
+			li.menu-item {
+				display: flex;
+			}
+			&.elementor-nav-menu__align- {
+				&start {
+					li.menu-item {
+						justify-content: flex-start;
+					}
+				}
+				&end {
+					li.menu-item {
+						justify-content: flex-end;
+					}
+				}
+				&center {
+					li.menu-item {
+						justify-content: center;
+					}
+				}
+				&justify {
+					li.menu-item {
+						justify-content: stretch;
+					}
+				}
+			}
+			a.elementor-item {
+				max-width: fit-content;
+			}
+		}
+
+		&.vamtam-round_menu-links .elementor-nav-menu--dropdown a {
+			border-radius: 20px;
+		}
+
+		ul.elementor-nav-menu--dropdown {
+			a, a:focus, a:hover {
+				border-inline-start: none;
+			}
+		}
+
+		&.vamtam-has-submenu-icon .menu-item .elementor-item {
+			padding-right: 60px;
+
+			&::after {
+				content: var( --vamtam-icon-arrow-link-up );
+				font-family: 'theme-icons';
+				inset-inline-end: 0;
+				inset-inline-start: auto;
+				position: absolute;
+				margin-inline-end: 20px;
+				border-radius: 9999px;
+				background: var(--vamtam-accent-color-1) !important;
+				color: var(--vamtam-accent-color-2) !important;
+				font-size: 6px;
+				width: 20px;
+				height: 20px;
+				text-align: center;
+				line-height: 20px;
+
+				body.rtl & {
+					transform: rotateY(180deg);
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,29 @@
+# WordPress core
+wordpress/wp-admin/
+wordpress/wp-includes/
+wordpress/wp-*.php
+wordpress/index.php
+wordpress/license.txt
+wordpress/readme.html
+wordpress/xmlrpc.php
+
+# Uploads (sync via WordMove)
+wordpress/wp-content/uploads/
+
+# Cache & temp
+wordpress/wp-content/cache/
+wordpress/wp-content/upgrade/
+wordpress/wp-content/wflogs/
+*.log
+
+# Local config
+wordpress/wp-config.php
+.DS_Store
+.env
+
+# Database dumps
+backups/*.sql
+backups/*.sql.gz
+
+# Theme samples (remove secrets)
+wordpress/wp-content/themes/finovate/samples/instagram-feed.json

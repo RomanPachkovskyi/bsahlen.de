@@ -1,0 +1,29 @@
+// Nested Tabs.
+.elementor-widget-n-tabs {
+	// Base Theme Widget Styles.
+	&.vamtam-has-theme-widget-styles {
+
+		&.vamtam-has-theme-style {
+			.e-n-tabs-heading {
+				position: absolute;
+				bottom: 0;
+				display: flex;
+				@hr_spacing: var(--vamtam-headings-horizontal-spacing, 30px);
+				@max_width: calc( var(--vamtam-headings-max-width, 100%) + calc(@hr_spacing * 2) );
+				max-width: @max_width;
+				left: 50%;
+				transform: translateX(-50%);
+				width: 100%;
+				padding-left: @hr_spacing;
+				padding-right: @hr_spacing;
+				margin-bottom: var(--vamtam-headings-vertical-spacing, 40px);
+				z-index: 2;
+			}
+
+			.e-n-tab-title {
+				-webkit-backdrop-filter: saturate(180%) blur(40px);
+				backdrop-filter: saturate(180%) blur(40px);
+			}
+		}
+	}
+}
