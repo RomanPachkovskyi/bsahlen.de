@@ -1187,11 +1187,75 @@ git push -u origin main
 
 ---
 
+### 11:05 - Перевірка наявності WP-CLI
+
+**Команда:**
+```bash
+command -v wp || true
+```
+
+**Результат:**
+- Команда не знайдена (WP-CLI відсутній)
+
+---
+
+### 11:06 - Встановлення WP-CLI у /usr/local/bin
+
+**Команда:**
+```bash
+curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && chmod +x /usr/local/bin/wp
+```
+
+**Результат:**
+- WP-CLI встановлено в `/usr/local/bin/wp`
+
+---
+
+### 11:07 - Перевірка WP-CLI
+
+**Команда:**
+```bash
+wp --info | head -n 20
+```
+
+**Результат:**
+- Помилка: `env: php: No such file or directory` (потрібен PHP CLI у PATH)
+
+---
+
+### 12:05 - Перевірка змінних у `.env` (без значень)
+
+**Команда:**
+```bash
+awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{print $1}' .env
+```
+
+**Результат:**
+- Знайдені ключі: `FTP_HOST`, `FTP_USER`, `FTP_PASS`, `FTP_PATH`, `PROD_DB_HOST`, `PROD_DB_NAME`, `PROD_DB_USER`, `PROD_DB_PASS`, `PROD_URL`
+
+---
+
+### 12:06 - Створення Movefile з `sql_adapter: default`
+
+**Дія:**
+- Додано `Movefile` з локальними параметрами та віддаленими через `.env`
+
+---
+
+### 12:07 - Оновлення документації
+
+**Дія:**
+- Оновлено `CLAUDE.md` (Movefile створено, sql_adapter default, нотатки про DB sync)
+
+---
+
 ## Файли змінені в цій сесії
 
 1. `.gitignore` — додано ігнорування дампів БД
 2. `/Users/roman/.zshrc` — додано PATH для WordMove
-3. `CLAUDE.md` — оновлено (Git статус, PATH, remote, Push Protection)
-4. `log/changelog.md` — додано лог дій по Git, PATH, commit/push
+3. `CLAUDE.md` — оновлено (Git статус, PATH, WP-CLI, Movefile)
+4. `log/changelog.md` — додано лог дій по Git, PATH, commit/push, WP-CLI, Movefile
 5. `.gitignore` — додано ігнорування `instagram-feed.json`
 6. `wordpress/wp-content/themes/finovate/samples/instagram-feed.json` — видалено (секрет)
+7. `/usr/local/bin/wp` — встановлено WP-CLI
+8. `Movefile` — створено (sql_adapter default)

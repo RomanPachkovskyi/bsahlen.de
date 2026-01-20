@@ -153,6 +153,7 @@ docker restart bsahlende-wordpress-1
 - **Docker Desktop** — локальний сервер
 - **lftp** — FTP клієнт для синхронізації
 - **WordMove** — встановлено як user gem (потрібен PATH `~/.gem/ruby/2.6.0/bin`)
+- **WP-CLI** — встановлено (`/usr/local/bin/wp`, потрібен PHP CLI)
 - **gh** (GitHub CLI) — авторизований як RomanPachkovskyi
 
 ---
@@ -161,9 +162,10 @@ docker restart bsahlende-wordpress-1
 
 - **WordMove:** встановлено (user gem); PATH `~/.gem/ruby/2.6.0/bin`
 - **lftp:** встановлено (`/usr/local/bin/lftp`)
-- **Movefile:** відсутній у репозиторії
+- **Movefile:** створено (sql_adapter: `default`, використовує `.env`)
 - **.env:** існує і не порожній (креденшли зберігаються тут)
 - **PATH:** рядок для WordMove додано у `~/.zshrc`
+- **WP-CLI:** встановлено (`/usr/local/bin/wp`), але `php` CLI відсутній у PATH
 
 ---
 
@@ -208,7 +210,7 @@ bsahlen/
 ## Що ще потрібно зробити
 
 1. [x] Встановити WordMove (Ruby gem)
-2. [ ] Створити Movefile для синхронізації
+2. [x] Створити Movefile для синхронізації
 3. [x] Налаштувати Git репозиторій
 4. [ ] Доробити mega-menu UI (тестування)
 
@@ -237,3 +239,5 @@ open http://localhost:8080
 - Docker акаунт не потрібен для роботи (вийшли з нього)
 - WordMove встановлено як user gem: додати `export PATH="$HOME/.gem/ruby/2.6.0/bin:$PATH"` у shell профіль або запускати `~/.gem/ruby/2.6.0/bin/wordmove`
 - WordMove 5.2.2: за замовчуванням адаптер `wpcli`; потрібен WP-CLI або зміна адаптера в Movefile
+- WP-CLI потребує PHP CLI в PATH (локально або запуск через контейнер)
+- Movefile використовує `global.sql_adapter: default` (файловий sync без WP-CLI; для DB sync потрібен доступ до MySQL з хоста або запуск WordMove у контейнері)
