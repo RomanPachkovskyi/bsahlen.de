@@ -1249,13 +1249,116 @@ awk -F= '/^[A-Za-z_][A-Za-z0-9_]*=/{print $1}' .env
 
 ---
 
+### 13:40 - Встановлення PHP CLI через Homebrew
+
+**Команда:**
+```bash
+brew install php
+```
+
+**Результат:**
+- PHP 8.5.2 встановлено
+- Бінарник: `/usr/local/bin/php`
+
+---
+
+### 13:42 - Перевірка PHP CLI
+
+**Команда:**
+```bash
+command -v php && php -v | head -n 2
+```
+
+**Результат:**
+- `php` доступний у PATH
+- `PHP 8.5.2 (cli)`
+
+---
+
+### 13:43 - Повторна перевірка WP-CLI
+
+**Команда:**
+```bash
+wp --info | head -n 20
+```
+
+**Результат:**
+- WP-CLI запускається
+- Warning: `react/promise` deprecation (PHP 8.5), на роботу не впливає
+
+---
+
+### 13:46 - Додавання сервісу wpcli у docker-compose
+
+**Дія:**
+- Додано сервіс `wpcli` (image `wordpress:cli-php8.2`, volumes `wordpress/` + `backups/`, entrypoint `wp --allow-root`)
+
+---
+
+### 13:47 - Документація WP-CLI через Docker
+
+**Дія:**
+- Оновлено `CLAUDE.md` з прикладами `docker-compose run --rm wpcli ...`
+
+---
+
+### 13:49 - Перевірка WP-CLI в контейнері
+
+**Команда:**
+```bash
+docker-compose run --rm wpcli --info | head -n 20
+```
+
+**Результат:**
+- Образ `wordpress:cli-php8.2` завантажено
+- WP-CLI запускається в контейнері (PHP 8.2.30)
+
+---
+
+### 13:51 - Підготовка змін до коміту
+
+**Команда:**
+```bash
+git add -A
+```
+
+**Результат:**
+- Файли додано у staging
+
+---
+
+### 13:52 - Коміт змін wpcli/документація
+
+**Команда:**
+```bash
+git commit -m "Add wpcli service and docs"
+```
+
+**Результат:**
+- Коміт створено
+
+---
+
+### 13:53 - Push у GitHub
+
+**Команда:**
+```bash
+git push
+```
+
+**Результат:**
+- Push успішний
+
+---
+
 ## Файли змінені в цій сесії
 
-1. `.gitignore` — додано ігнорування дампів БД
+1. `.gitignore` — додано ігнорування дампів БД та `instagram-feed.json`
 2. `/Users/roman/.zshrc` — додано PATH для WordMove
-3. `CLAUDE.md` — оновлено (Git статус, PATH, WP-CLI, Movefile)
-4. `log/changelog.md` — додано лог дій по Git, PATH, commit/push, WP-CLI, Movefile
-5. `.gitignore` — додано ігнорування `instagram-feed.json`
+3. `docker-compose.yml` — додано сервіс `wpcli`
+4. `CLAUDE.md` — оновлено (Git статус, PATH, PHP CLI, WP-CLI, Movefile, wpcli)
+5. `log/changelog.md` — додано лог дій по Git, PATH, commit/push, WP-CLI, PHP CLI, Movefile, wpcli
 6. `wordpress/wp-content/themes/finovate/samples/instagram-feed.json` — видалено (секрет)
 7. `/usr/local/bin/wp` — встановлено WP-CLI
-8. `Movefile` — створено (sql_adapter default)
+8. `/usr/local/bin/php` — встановлено PHP CLI
+9. `Movefile` — створено (sql_adapter default)

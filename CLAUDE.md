@@ -67,6 +67,21 @@ docker restart bsahlende-wordpress-1
 
 ---
 
+## WP-CLI через Docker
+
+```bash
+# Інформація про WP-CLI
+docker-compose run --rm wpcli --info
+
+# Підготовка SQL для продакшену (URL replace, без зміни локальної БД)
+docker-compose run --rm wpcli search-replace \
+  'http://localhost:8080' 'https://bsahlen.de' \
+  --skip-columns=guid --all-tables \
+  --export=/backups/bsahlen.prod.sql
+```
+
+---
+
 ## Git
 
 - **Гілка:** `main`
@@ -153,7 +168,8 @@ docker restart bsahlende-wordpress-1
 - **Docker Desktop** — локальний сервер
 - **lftp** — FTP клієнт для синхронізації
 - **WordMove** — встановлено як user gem (потрібен PATH `~/.gem/ruby/2.6.0/bin`)
-- **WP-CLI** — встановлено (`/usr/local/bin/wp`, потрібен PHP CLI)
+- **PHP CLI** — встановлено (Homebrew, `/usr/local/bin/php`)
+- **WP-CLI** — встановлено (`/usr/local/bin/wp`)
 - **gh** (GitHub CLI) — авторизований як RomanPachkovskyi
 
 ---
@@ -165,7 +181,8 @@ docker restart bsahlende-wordpress-1
 - **Movefile:** створено (sql_adapter: `default`, використовує `.env`)
 - **.env:** існує і не порожній (креденшли зберігаються тут)
 - **PATH:** рядок для WordMove додано у `~/.zshrc`
-- **WP-CLI:** встановлено (`/usr/local/bin/wp`), але `php` CLI відсутній у PATH
+- **PHP CLI:** встановлено (`/usr/local/bin/php`)
+- **WP-CLI:** працює, але є warning через PHP 8.5 (`react/promise` deprecation)
 
 ---
 
@@ -239,5 +256,6 @@ open http://localhost:8080
 - Docker акаунт не потрібен для роботи (вийшли з нього)
 - WordMove встановлено як user gem: додати `export PATH="$HOME/.gem/ruby/2.6.0/bin:$PATH"` у shell профіль або запускати `~/.gem/ruby/2.6.0/bin/wordmove`
 - WordMove 5.2.2: за замовчуванням адаптер `wpcli`; потрібен WP-CLI або зміна адаптера в Movefile
-- WP-CLI потребує PHP CLI в PATH (локально або запуск через контейнер)
+- WP-CLI під PHP 8.5 показує deprecation warning (react/promise); на роботу не впливає
 - Movefile використовує `global.sql_adapter: default` (файловий sync без WP-CLI; для DB sync потрібен доступ до MySQL з хоста або запуск WordMove у контейнері)
+- Для роботи з локальною БД використовувати `docker-compose run --rm wpcli ...` (контейнер бачить `db`)

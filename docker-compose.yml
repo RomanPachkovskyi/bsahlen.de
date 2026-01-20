@@ -34,5 +34,15 @@ services:
     environment:
       PMA_HOST: db
 
+  wpcli:
+    image: wordpress:cli-php8.2
+    volumes:
+      - ./wordpress:/var/www/html:cached
+      - ./backups:/backups
+    working_dir: /var/www/html
+    entrypoint: ["wp", "--allow-root"]
+    depends_on:
+      - db
+
 volumes:
   db_data:
