@@ -63,8 +63,8 @@ Version: 1.0
 .bsa-mega-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
@@ -127,31 +127,30 @@ body.bsa-mega-open .e-n-menu-title-text {
   transition: color 0.2s ease;
 }
 
-/* Active menu item (whose mega menu is open) - ALWAYS dark text, NO underline */
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text {
+/* When hovering any menu item - make text dark */
+body.bsa-mega-open .e-n-menu-title:hover .e-n-menu-title-text {
   color: #233D3A !important;
-  text-decoration: none !important;
-  background-image: none !important;
-  box-shadow: none !important;
 }
 
-/* Active menu item - white pill background */
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container {
-  background-color: #ffffff !important;
-  border-radius: 50px;
+/* When hovering any menu item, current page (.e-current) text should also be dark */
+.e-n-menu-heading:has(.e-n-menu-title:hover) .e-current .e-n-menu-title-text {
+  color: #233D3A !important;
 }
 
-/* Remove Elementor hover effects on active item */
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container::before,
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-container::after,
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text::before,
-body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text::after {
-  display: none !important;
-  opacity: 0 !important;
+/* When mega menu is open, current page (.e-current) should always have dark text */
+body.bsa-mega-open .e-current .e-n-menu-title-text {
+  color: #233D3A !important;
 }
 
-/* Hover on OTHER menu items (not active) - dark color */
-body.bsa-mega-open .e-n-menu-item:not(.bsa-mega-active) .e-n-menu-title-container:hover .e-n-menu-title-text {
+/* Active menu item - apply Elementor hover styles permanently */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title {
+  background-color: #F7F5F1 !important;
+  border-radius: 30px !important;
+  padding: 12px 14px !important;
+}
+
+/* Active menu item (whose mega menu is open) - ALWAYS dark text */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title-text {
   color: #233D3A !important;
 }
 

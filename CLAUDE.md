@@ -82,6 +82,34 @@ docker-compose run --rm wpcli search-replace \
 
 ---
 
+## Корисні команди
+
+### Бекап БД (перед важливими змінами)
+```bash
+# Експорт БД з Docker з timestamp
+docker-compose run --rm wpcli db export /backups/backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### Безпека Git (перевірка .env)
+```bash
+# Перевірити що не комітимо .env або інші секрети
+git status | grep -E '\.env|credentials|password'
+
+# Подивитись що в staging перед commit
+git diff --cached --name-only
+```
+
+### Очистка старих бекапів
+```bash
+# Показати всі бекапи старші за 7 днів
+find backups -name "backup_*.sql" -mtime +7
+
+# Видалити бекапи старші за 7 днів (обережно!)
+find backups -name "backup_*.sql" -mtime +7 -delete
+```
+
+---
+
 ## Git
 
 - **Гілка:** `main`
@@ -214,13 +242,20 @@ bsahlen/
 ### Mega Menu система
 
 **Класи:**
-- `bsa-mega-overlay` — темний overlay з blur
+- `bsa-mega-overlay` — темний overlay з blur (opacity 0.5, blur 3px)
 - `bsa-mega-open` — на body коли меню відкрите
-- `bsa-mega-active` — на активному пункті меню
+- `bsa-mega-active` — на активному пункті меню (чиє mega menu відкрите)
+- `.e-current` — пункт меню поточної сторінки (WordPress)
 
-**Кольори:**
+**Hover логіка:**
+- Elementor hover: `#F7F5F1` (світло-бежевий), padding 12px/14px, border-radius 30px
+- Активний пункт (`.bsa-mega-active`) — **завжди** має Elementor hover стилі (зафіксовано через CSS)
+- При hover на будь-який пункт → текст темний `#233D3A`
+- Поточна сторінка (`.e-current`) — завжди темний текст `#233D3A` коли mega menu відкрите
+
+**Кольори тексту:**
 - Неактивні пункти при відкритому меню: `#f7f5f1` (світлий)
-- Активний пункт: `#233D3A` (темний) + білий фон
+- Активний пункт / hover / поточна сторінка: `#233D3A` (темний)
 
 ---
 

@@ -1362,3 +1362,279 @@ git push
 7. `/usr/local/bin/wp` — встановлено WP-CLI
 8. `/usr/local/bin/php` — встановлено PHP CLI
 9. `Movefile` — створено (sql_adapter default)
+
+---
+
+## 2026-01-20: Третя сесія — Огляд проекту та додавання команд
+
+### Учасники
+- **Користувач:** Roman (RomanPachkovskyi на GitHub)
+- **AI:** Claude Sonnet 4.5
+
+---
+
+### 19:00 - Огляд конфігурації проекту
+
+**Мета:** Перевірити чи Claude Sonnet може працювати з проектом і дати рекомендації.
+
+**Прочитані файли:**
+- `docker-compose.yml` — Docker інфраструктура (WordPress, MySQL, phpMyAdmin, WP-CLI)
+- `Movefile` — конфігурація WordMove
+- `.gitignore` — Git виключення
+- `wordpress/wp-content/themes/bsahlen/functions.php` — child theme
+- `wordpress/wp-content/themes/bsahlen/style.css` — custom CSS (hover underline, mega menu)
+- `wordpress/wp-content/themes/bsahlen/assets/js/custom.js` — mega menu JavaScript
+
+**Команди:**
+```bash
+docker ps  # Перевірка запущених контейнерів
+ls -la wordpress/wp-content/themes/bsahlen/  # Структура child theme
+```
+
+**Результат:**
+- Все працює правильно
+- Docker контейнери запущені (5 годин uptime)
+- Child theme структура коректна
+- Mega menu система реалізована добре
+
+---
+
+### 19:10 - Аналіз та рекомендації
+
+**Claude Sonnet проаналізував проект і запропонував:**
+
+1. ✅ Pre-commit hook (щоб не комітити .env)
+2. ✅ Backup скрипт для БД
+3. ❌ .env.example (не потрібен — користувач працює один)
+4. ❌ README.md (не потрібен — вся документація в CLAUDE.md)
+5. ❌ Автоматизація, webpack, PHP Sniffer (зайве для простого workflow)
+
+**Рішення користувача:**
+- **Мінімалізм:** тільки корисні команди, без складних систем
+- **Причина:** різні AI агенти працюють над проектом; краще прості команди в документації ніж окремі скрипти
+
+---
+
+### 19:15 - Додавання корисних команд в CLAUDE.md
+
+**Додана секція "Корисні команди":**
+
+```bash
+# Бекап БД з timestamp
+docker-compose run --rm wpcli db export /backups/backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Перевірка .env перед commit
+git status | grep -E '\.env|credentials|password'
+git diff --cached --name-only
+
+# Очистка старих бекапів
+find backups -name "backup_*.sql" -mtime +7
+find backups -name "backup_*.sql" -mtime +7 -delete
+```
+
+**Місце:** Після секції "WP-CLI через Docker"
+
+---
+
+### 19:20 - Оновлення changelog.md
+
+**Дія:** Записано цю сесію в `log/changelog.md`
+
+---
+
+## Підсумок сесії
+
+**Що зроблено:**
+1. Claude Sonnet ознайомився з проектом
+2. Проаналізував Docker, Git, child theme, mega menu
+3. Дав рекомендації (відхилено зайву автоматизацію)
+4. Додав секцію "Корисні команди" в CLAUDE.md
+5. Оновив changelog.md
+
+**Філософія проекту:**
+- **Простота > автоматизація**
+- **Документація > скрипти**
+- Будь-який AI агент може прочитати CLAUDE.md і виконати команди
+
+---
+
+## Файли змінені в цій сесії
+
+1. `CLAUDE.md` — додано секцію "Корисні команди"
+2. `log/changelog.md` — записано сесію
+
+---
+
+## 2026-01-20: Четверта сесія — Виправлення Mega Menu Hover
+
+### Учасники
+- **Користувач:** Roman (RomanPachkovskyi на GitHub)
+- **AI:** Claude Sonnet 4.5
+
+---
+
+### 19:30 - Початок роботи над mega menu hover
+
+**Проблема:** Користувач показав що є **два різні hover** на пунктах меню:
+1. Білий hover рівно по тексту (зайвий)
+2. Elementor hover #F7F5F1 з padding (правильний)
+
+**Мета:** Зафіксувати правильний Elementor hover коли mega menu відкрите і мишка йде з пункту.
+
+---
+
+### 19:35 - Перша спроба: padding на контейнер
+
+**Дія:** Додано `padding: 12px 14px` на `.e-n-menu-title-container` коли активний.
+
+**Результат:** Падінги накладаються один на одний — не працює.
+
+---
+
+### 19:40 - Рішення: повернути до чистого стану
+
+**Користувач запропонував:** Видалити всі наші hover фікси і залишити тільки Elementor hover.
+
+**Дія:** Видалено з CSS:
+- Білий pill фон
+- Padding на активному елементі
+- Всі спроби відключити Elementor hover
+
+**Результат:** Повернулись до чистого стану — тільки базова логіка (overlay, зміна кольорів).
+
+---
+
+### 19:50 - Інспекція Elementor hover через DevTools
+
+**Користувач надав скріншот DevTools** з Elementor hover:
+
+```css
+/* З DevTools Computed styles */
+padding: 12px 14px
+border-radius: 30px 30px 30px 30px
+background-color: var(--e-global-color-vamtam_accent_3)  /* #F7F5F1 */
+```
+
+**Ключова знахідка:** Hover застосовується на `.e-n-menu-title` (батьківський `<div>`), а не на `<a>` тег!
+
+---
+
+### 19:55 - Застосування правильних стилів
+
+**Дія:** Додано CSS правило на `.e-n-menu-title` коли активний:
+
+```css
+/* Active menu item - apply Elementor hover styles permanently */
+body.bsa-mega-open .e-n-menu-item.bsa-mega-active .e-n-menu-title {
+  background-color: #F7F5F1 !important;
+  border-radius: 30px !important;
+  padding: 12px 14px !important;
+}
+```
+
+**Результат:** ✅ Працює! Активний пункт меню має правильний hover який залишається.
+
+---
+
+### 20:05 - Проблема: текст зливається при hover на інший пункт
+
+**Нова проблема:** Користувач на сторінці `/finanzbuchhaltung/`:
+- Пункт "Finanzbuchhaltung" має клас `.e-current` (поточна сторінка)
+- При hover на "Büroservice" → він отримує фон #F7F5F1
+- Текст "Finanzbuchhaltung" стає світлим і зливається з фоном
+
+**Причина:** Наше правило робить всі пункти світлими коли mega menu відкрите, але не враховує hover на інших пунктах.
+
+---
+
+### 20:10 - Виправлення: темний текст при hover
+
+**Дія 1:** Додано правило для hover на будь-якому пункті:
+
+```css
+/* When hovering any menu item - make text dark */
+body.bsa-mega-open .e-n-menu-title:hover .e-n-menu-title-text {
+  color: #233D3A !important;
+}
+```
+
+**Дія 2:** Додано правило для `.e-current` при hover на інших пунктах:
+
+```css
+/* When hovering any menu item, current page text should also be dark */
+.e-n-menu-heading:has(.e-n-menu-title:hover) .e-current .e-n-menu-title-text {
+  color: #233D3A !important;
+}
+```
+
+**Результат:** Краще, але текст "Finanzbuchhaltung" знову зливається коли мишка йде на мега-меню (hover зникає).
+
+---
+
+### 20:15 - Фінальне виправлення: завжди темний текст для поточної сторінки
+
+**Дія:** Додано правило що поточна сторінка (`.e-current`) завжди має темний текст коли mega menu відкрите:
+
+```css
+/* When mega menu is open, current page should always have dark text */
+body.bsa-mega-open .e-current .e-n-menu-title-text {
+  color: #233D3A !important;
+}
+```
+
+**Результат:** ✅ Повністю працює! Текст поточної сторінки завжди темний, не зливається.
+
+---
+
+### 20:20 - Збільшення затемнення overlay
+
+**Запит користувача:** Додати більше затемнення для фону коли mega menu працює.
+
+**Дія:** Оновлено `.bsa-mega-overlay`:
+- Opacity: `0.35` → `0.5` (збільшено на 43%)
+- Blur: `2px` → `3px`
+
+```css
+.bsa-mega-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+}
+```
+
+**Результат:** ✅ Фон темніший, мега-меню виглядає краще.
+
+---
+
+### 20:25 - Оновлення документації
+
+**Файли оновлено:**
+1. `CLAUDE.md` — додано детальний опис Mega Menu hover системи
+2. `log/changelog.md` — записано всю сесію
+
+---
+
+## Підсумок сесії
+
+**Що зроблено:**
+1. ✅ Виправлено mega menu hover — зафіксовано Elementor hover коли mega menu відкрите
+2. ✅ Вирішено проблему зливання тексту поточної сторінки з фоном
+3. ✅ Додано правила для всіх кейсів (hover, активний пункт, поточна сторінка)
+4. ✅ Збільшено затемнення overlay для кращого вигляду
+5. ✅ Оновлено документацію (CLAUDE.md, changelog.md)
+
+**Технічні деталі:**
+- CSS правила застосовуються на `.e-n-menu-title` (батьківський div), не на `<a>` тег
+- Використано `:has()` селектор для виявлення hover на будь-якому пункті
+- Стилі скопійовані з Elementor через DevTools Computed styles
+- Overlay: `rgba(0, 0, 0, 0.5)` з `blur(3px)`
+
+**Філософія:**
+Простота і точність — скопіювали існуючі Elementor стилі замість вигадування власних.
+
+---
+
+## Файли змінені в цій сесії
+
+1. `wordpress/wp-content/themes/bsahlen/style.css` — mega menu hover логіка (overlay, текст, фон)
+2. `CLAUDE.md` — оновлено секцію Mega Menu система
+3. `log/changelog.md` — записано детальний лог сесії
