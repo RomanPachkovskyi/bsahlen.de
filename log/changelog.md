@@ -1638,3 +1638,65 @@ body.bsa-mega-open .e-current .e-n-menu-title-text {
 1. `wordpress/wp-content/themes/bsahlen/style.css` — mega menu hover логіка (overlay, текст, фон)
 2. `CLAUDE.md` — оновлено секцію Mega Menu система
 3. `log/changelog.md` — записано детальний лог сесії
+
+---
+
+### 20:40 - Деплой на production
+
+**Мета:** Залити child theme і БД на хостинг bsahlen.de
+
+**Кроки:**
+
+1. **Експорт БД з заміною URL:**
+```bash
+docker-compose run --rm wpcli search-replace 'http://localhost:8080' 'https://bsahlen.de' \
+  --skip-columns=guid --all-tables --export=/backups/bsahlen.prod.sql
+```
+
+**Результат:**
+- Файл: `backups/bsahlen.prod.sql` (101MB)
+- Зроблено 4 заміни в таблиці `XutfWi7d_options`
+- Залишилось 7 входжень localhost в guid колонках (пропущено через --skip-columns)
+
+2. **Заливання child theme через lftp:**
+```bash
+lftp -u "bsahlen.de_ftp,***" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  mirror -R --verbose wordpress/wp-content/themes/bsahlen httpdocs/wp-content/themes/bsahlen; quit" \
+  81.209.248.242
+```
+
+**Результат:**
+- ✅ `functions.php` — залито
+- ✅ `style.css` (з mega menu hover фіксами) — залито
+- ✅ `assets/js/custom.js` (mega menu JavaScript) — залито
+
+3. **Імпорт БД на хостингу (вручну через phpMyAdmin)**
+
+4. **Активація child theme (вручну через wp-admin)**
+
+**Фінальний результат:** ✅ **Все працює на production!** Mega menu hover працює ідеально на https://bsahlen.de
+
+---
+
+## Підсумок деплою
+
+**Що на production:**
+- ✅ Child theme `bsahlen` активовано
+- ✅ Mega menu hover працює (Elementor hover #F7F5F1 зафіксовано)
+- ✅ Overlay затемнення (opacity 0.5, blur 3px)
+- ✅ Текст поточної сторінки темний (не зливається)
+- ✅ БД з правильними URL (https://bsahlen.de)
+
+**Інструменти для деплою:**
+- WP-CLI (через Docker) — експорт БД з search-replace
+- lftp — заливання файлів через FTPS
+- phpMyAdmin (Plesk) — імпорт БД
+
+**Примітка:** WordMove не спрацював (Ruby dependency conflict), використано lftp напряму.
+
+---
+
+## Файли оновлені після деплою
+
+1. `backups/bsahlen.prod.sql` — експортована БД для production (101MB)
+2. `log/changelog.md` — записано лог деплою

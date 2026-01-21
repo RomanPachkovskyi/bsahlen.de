@@ -214,15 +214,36 @@ find backups -name "backup_*.sql" -mtime +7 -delete
 
 ---
 
-## Workflow (заплановано)
+## Workflow деплою
 
+### Локальна розробка → Production
+
+```bash
+# 1. Працюємо локально (localhost:8080)
+# 2. Тестуємо зміни
+
+# 3. Експорт БД з заміною URL
+docker-compose run --rm wpcli search-replace \
+  'http://localhost:8080' 'https://bsahlen.de' \
+  --skip-columns=guid --all-tables \
+  --export=/backups/bsahlen.prod.sql
+
+# 4. Заливання child theme через lftp
+lftp -u "bsahlen.de_ftp,***" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  mirror -R --verbose wordpress/wp-content/themes/bsahlen httpdocs/wp-content/themes/bsahlen; quit" \
+  81.209.248.242
+
+# 5. Імпорт БД на хостингу (Plesk → phpMyAdmin)
+# 6. Активувати child theme (wp-admin → Appearance → Themes)
 ```
-1. Працюємо локально (localhost:8080)
-2. Тестуємо зміни
-3. WordMove push --themes/--plugins на продакшен
-4. Якщо на хостингу оновили WP/плагіни:
-   WordMove pull --wordpress --plugins
-```
+
+**Примітка:** WordMove має проблеми з Ruby dependencies — використовуємо WP-CLI + lftp напряму.
+
+### Останній деплой
+- **Дата:** 2026-01-20
+- **Що залито:** Child theme bsahlen (mega menu hover фікси)
+- **БД:** Оновлено з localhost URL → production URL
+- **Статус:** ✅ Все працює на https://bsahlen.de
 
 ---
 
