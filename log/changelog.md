@@ -1909,3 +1909,219 @@ wordpress/wp-content/uploads wp-content/uploads; quit" "$FTP_HOST"
 
 1. `backups/bsahlen.prod.sql` — новий дамп БД з URL для production
 2. `log/changelog.md` — додано лог деплою
+
+---
+
+## 2026-01-21: Деплой на production з виправленням помилок
+
+### Учасники
+- **Користувач:** Roman (RomanPachkovskyi на GitHub)
+- **AI:** Claude Sonnet 4.5
+
+---
+
+### 17:15 - Виявлення проблеми з попереднім деплоєм
+
+**Проблема:** Користувач повідомив що о 17:00 спроба деплою завис, створилася база `backup_local_20260121_165901.sql` але процес не завершився.
+
+**Команди:**
+```bash
+ps aux | grep -E 'mysql|wpcli|docker-compose' | grep -v grep
+docker ps -a
+ls -lh backups/backup_local_20260121_165901.sql
+```
+
+**Результат:**
+- Всі Docker контейнери в статусі "Paused" (призупинені)
+- Файл `backup_local_20260121_165901.sql` (104MB) виявився валідним і повним
+- Експорт завершився успішно: `Dump completed on 2026-01-21 15:59:17`
+
+**Причина зависання:** Комп'ютер заснув після експорту БД, Docker автоматично призупинив контейнери.
+
+---
+
+### 17:18 - Розпаузнення Docker контейнерів
+
+**Команда:**
+```bash
+docker unpause bsahlende-wordpress-1 bsahlende-db-1 bsahlende-phpmyadmin-1
+```
+
+**Результат:**
+- ✅ Контейнери розпаузено
+- Всі сервіси знову працюють
+
+---
+
+### 17:19 - Перевірка валідності бекапу
+
+**Команди:**
+```bash
+head -n 30 backups/backup_local_20260121_165901.sql | grep -E '^--|MySQL dump|Host:|Database:'
+tail -n 10 backups/backup_local_20260121_165901.sql
+```
+
+**Результат:**
+- ✅ MySQL dump header правильний
+- ✅ База: `bsahlen` (локальна)
+- ✅ Dump completed successfully
+- **Висновок:** Файл НЕ помилковий, він валідний для локальних бекапів
+
+**Важливо:** Користувач уточнив що цей бекап залишаємо (для відкату), а для production потрібен новий з search-replace.
+
+---
+
+### 17:23 - Експорт БД для production з заміною URL
+
+**Команда:**
+```bash
+docker-compose run --rm wpcli search-replace 'http://localhost:8080' 'https://bsahlen.de' \
+  --skip-columns=guid --all-tables --export=/backups/bsahlen.prod.sql
+```
+
+**Результат:**
+- ✅ Експортовано `backups/bsahlen.prod.sql` (104MB)
+- **Success: Made 157 replacements**
+- Замінено URL в таблицях:
+  - `XutfWi7d_options`: 6 замін
+  - `XutfWi7d_postmeta`: 1 заміна
+  - `XutfWi7d_posts` (post_content): 17 замін
+  - `XutfWi7d_usermeta`: 1 заміна
+  - `XutfWi7d_yoast_indexable` (permalink, images): 132 заміни
+- Є deprecation warnings від PHP/WP-CLI (не впливають на експорт)
+
+---
+
+### 17:24 - Upload themes через FTPS
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
+  wordpress/wp-content/themes wp-content/themes; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- ✅ Themes синхронізовано
+- Child theme `bsahlen` з усіма файлами залито
+
+---
+
+### 17:25 - Upload plugins через FTPS
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store --parallel=5 \
+  wordpress/wp-content/plugins wp-content/plugins; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- ✅ Plugins синхронізовано з паралельними завантаженнями
+- **Новий плагін `duplicate-post`** повністю залито (70+ файлів)
+- Структура: admin/, compat/, css/, js/, src/, vendor/
+
+---
+
+### 17:26 - Upload uploads через FTPS
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
+  --exclude '2013/' --exclude '2025/' --exclude '2026/' --parallel=5 \
+  wordpress/wp-content/uploads wp-content/uploads; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- ✅ Uploads синхронізовано
+- Оновлено Elementor CSS файли (post-*.css, loop-*.css)
+- Старі роки виключені (2013/2025/2026)
+
+---
+
+### 17:27 - Імпорт БД на хостинг (вручну)
+
+**Дія:** Користувач імпортував `backups/bsahlen.prod.sql` (104MB) через Plesk → phpMyAdmin у базу `wp_ynu3n`.
+
+**Результат:**
+- ✅ База імпортована успішно
+- URL змінено на https://bsahlen.de
+
+---
+
+### 17:28 - Проблема: сайт без стилів
+
+**Симптом:** Користувач показав скріншот - сайт повністю без CSS, тільки чистий HTML.
+
+**Причина:** Після деплою Elementor CSS файли не регенеровані. Це стандартна проблема WordPress/Elementor - старі кешовані CSS файли більше не відповідають актуальним даним БД.
+
+---
+
+### 17:30 - Виправлення: регенерація Elementor CSS
+
+**Спосіб 1 (використано):**
+1. Зайти: https://bsahlen.de/wp-admin
+2. Elementor → Tools → Regenerate CSS & Data
+3. Натиснути **"Regenerate Files"**
+4. Hard refresh (Ctrl+Shift+R)
+
+**Спосіб 2 (альтернатива через SQL):**
+```sql
+DELETE FROM wp_ynu3n.XutfWi7d_options WHERE option_name = '_elementor_css_print_method';
+UPDATE wp_ynu3n.XutfWi7d_options SET option_value = '0' WHERE option_name = 'elementor_css_files_generated';
+```
+
+**Результат:**
+- ✅ **Спосіб 1 спрацював!**
+- Всі стилі з'явились
+- Сайт працює правильно на production
+
+---
+
+### 17:35 - Оновлення документації
+
+**Файли:**
+1. `CLAUDE.md` — оновлено секцію "Останній деплой", додано важливе попередження про регенерацію Elementor CSS
+2. `log/changelog.md` — записано повний лог сесії з усіма командами і рішеннями
+
+---
+
+## Підсумок сесії
+
+**Що зроблено:**
+1. ✅ Виявлено і виправлено зависання Docker (Paused контейнери)
+2. ✅ Створено валідну базу для production (`bsahlen.prod.sql`, 157 замін URL)
+3. ✅ Залито themes/plugins/uploads на хостинг через FTPS
+4. ✅ Імпортовано базу даних на production
+5. ✅ Виправлено проблему зі стилями (регенерація Elementor CSS)
+6. ✅ Оновлено документацію з важливими нотатками
+
+**Важливий урок:**
+- **Після КОЖНОГО деплою обов'язково регенерувати Elementor CSS на production!**
+- Без цього кроку сайт буде без стилів
+
+**Статус production:**
+- ✅ https://bsahlen.de працює повністю
+- ✅ Child theme `bsahlen` активна
+- ✅ Mega menu з усіма фіксами
+- ✅ Плагін `duplicate-post` встановлено
+
+**Бекапи:**
+- `backup_local_20260121_165901.sql` (104MB) - локальна база (для відкату)
+- `bsahlen.prod.sql` (104MB) - production база (використано для імпорту)
+- `wp_ynu3n.sql` (101MB) - оригінальна база з 2026-01-19
+
+---
+
+## Файли змінені в цій сесії
+
+1. `backups/bsahlen.prod.sql` — нова база для production (104MB, 157 URL replacements)
+2. `CLAUDE.md` — оновлено секцію деплою + додано попередження про Elementor CSS
+3. `log/changelog.md` — додано детальний лог сесії з усіма командами і виправленнями

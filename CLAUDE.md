@@ -265,10 +265,22 @@ lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-for
 **Примітка:** WordMove має проблеми (Ruby/SSL mismatch) — використовуємо WP-CLI + lftp напряму.
 
 ### Останній деплой
-- **Дата:** 2026-01-21
-- **Що залито:** themes/plugins/uploads (uploads без 2013/2025/2026)
-- **БД:** `backups/bsahlen.prod.sql` готова до імпорту
-- **Статус:** ⏳ очікує імпорту БД на production
+- **Дата:** 2026-01-21 17:23
+- **Що залито:**
+  - Themes (child theme `bsahlen`)
+  - Plugins (включно з новим `duplicate-post`)
+  - Uploads (Elementor CSS, без 2013/2025/2026)
+- **БД:** `backups/bsahlen.prod.sql` (104MB, 157 replacements)
+- **Статус:** ✅ Завершено і працює на production
+
+### ⚠️ ВАЖЛИВО: Після кожного деплою
+**Обов'язково регенерувати Elementor CSS на production:**
+1. Зайти: https://bsahlen.de/wp-admin
+2. Elementor → Tools → Regenerate CSS & Data
+3. Натиснути **"Regenerate Files"**
+4. Hard refresh сайт (Ctrl+Shift+R)
+
+**Без цього кроку сайт буде без стилів!**
 
 ---
 
