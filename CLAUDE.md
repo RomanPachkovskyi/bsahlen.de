@@ -214,6 +214,14 @@ find backups -name "backup_*.sql" -mtime +7 -delete
 
 ---
 
+## Перевірки 2026-01-21
+
+- **Docker:** `wordpress`, `db`, `phpmyadmin` запущені
+- **HTTP:** `http://localhost:8080` та `http://localhost:8081` відповідають `200 OK`
+- **Git:** робоче дерево чисте
+
+---
+
 ## Workflow деплою
 
 ### Локальна розробка → Production
@@ -228,22 +236,39 @@ docker-compose run --rm wpcli search-replace \
   --skip-columns=guid --all-tables \
   --export=/backups/bsahlen.prod.sql
 
-# 4. Заливання child theme через lftp
-lftp -u "bsahlen.de_ftp,***" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
-  mirror -R --verbose wordpress/wp-content/themes/bsahlen httpdocs/wp-content/themes/bsahlen; quit" \
-  81.209.248.242
+# 4. Підтягнути змінні з .env (CRLF fix)
+set -a; source <(tr -d '\r' < ./.env); set +a
 
-# 5. Імпорт БД на хостингу (Plesk → phpMyAdmin)
-# 6. Активувати child theme (wp-admin → Appearance → Themes)
+# 5. Themes
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
+  wordpress/wp-content/themes wp-content/themes; quit" "$FTP_HOST"
+
+# 6. Plugins
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store --parallel=5 \
+  wordpress/wp-content/plugins wp-content/plugins; quit" "$FTP_HOST"
+
+# 7. Uploads (без 2013/2025/2026)
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+  set ftp:ssl-protect-data true; cd $FTP_PATH; \
+  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
+  --exclude '2013/' --exclude '2025/' --exclude '2026/' --parallel=5 \
+  wordpress/wp-content/uploads wp-content/uploads; quit" "$FTP_HOST"
+
+# 8. Імпорт БД на хостингу (Plesk → phpMyAdmin)
+# 9. Перевірка сайту на production
 ```
 
-**Примітка:** WordMove має проблеми з Ruby dependencies — використовуємо WP-CLI + lftp напряму.
+**Примітка:** WordMove має проблеми (Ruby/SSL mismatch) — використовуємо WP-CLI + lftp напряму.
 
 ### Останній деплой
-- **Дата:** 2026-01-20
-- **Що залито:** Child theme bsahlen (mega menu hover фікси)
-- **БД:** Оновлено з localhost URL → production URL
-- **Статус:** ✅ Все працює на https://bsahlen.de
+- **Дата:** 2026-01-21
+- **Що залито:** themes/plugins/uploads (uploads без 2013/2025/2026)
+- **БД:** `backups/bsahlen.prod.sql` готова до імпорту
+- **Статус:** ⏳ очікує імпорту БД на production
 
 ---
 

@@ -1700,3 +1700,212 @@ lftp -u "bsahlen.de_ftp,***" -e "set ssl:verify-certificate no; set ftp:ssl-forc
 
 1. `backups/bsahlen.prod.sql` — експортована БД для production (101MB)
 2. `log/changelog.md` — записано лог деплою
+
+---
+
+## 2026-01-21: Перевірка локального середовища
+
+### Учасники
+- **Користувач:** Roman (RomanPachkovskyi на GitHub)
+- **AI:** Codex (GPT-5)
+
+---
+
+### 11:20 - Перевірка контейнерів Docker
+
+**Команда:**
+```bash
+docker ps
+```
+
+**Результат:**
+- Контейнери `bsahlende-wordpress-1`, `bsahlende-db-1`, `bsahlende-phpmyadmin-1` запущені
+
+---
+
+### 11:20 - Перевірка HTTP (sandbox)
+
+**Команди:**
+```bash
+curl -I http://localhost:8080 | head -n 5
+curl -I http://localhost:8081 | head -n 5
+```
+
+**Результат:**
+- Обидві перевірки не змогли підключитись (обмеження sandbox)
+
+---
+
+### 11:21 - Повторна перевірка HTTP (escalated)
+
+**Команди:**
+```bash
+curl -I http://localhost:8080 | head -n 5
+curl -I http://localhost:8081 | head -n 5
+```
+
+**Результат:**
+- `http://localhost:8080` відповідає `200 OK`
+- `http://localhost:8081` відповідає `200 OK`
+
+---
+
+### 11:21 - Перевірка Git статусу
+
+**Команда:**
+```bash
+git status -sb
+```
+
+**Результат:**
+- Робоче дерево чисте (`main...origin/main`)
+- Попередження Git про `xcrun_db` у `/tmp` (permission denied)
+
+---
+
+## Файли змінені в цій сесії
+
+1. `CLAUDE.md` — додано перевірку 2026-01-21
+2. `log/changelog.md` — додано лог перевірки середовища
+
+---
+
+## 2026-01-21: Підготовка деплою (local → production)
+
+### Учасники
+- **Користувач:** Roman (RomanPachkovskyi на GitHub)
+- **AI:** Codex (GPT-5)
+
+---
+
+### 12:54 - Експорт БД для production з заміною URL
+
+**Команда:**
+```bash
+docker-compose run --rm wpcli search-replace 'http://localhost:8080' 'https://bsahlen.de' \
+  --skip-columns=guid --all-tables --export=/backups/bsahlen.prod.sql
+```
+
+**Результат:**
+- Експортовано `backups/bsahlen.prod.sql`
+- `Success: Made 6 replacements`
+- Є deprecation warnings у WP-CLI (не вплинули на експорт)
+
+---
+
+### 12:55 - WordMove push (помилка)
+
+**Команда:**
+```bash
+/Users/roman/.gem/ruby/2.6.0/bin/wordmove push --themes --plugins
+```
+
+**Результат:**
+- `NameError` в ActiveSupport (LoggerThreadSafeLevel)
+
+---
+
+### 12:56 - WordMove push (повторна спроба з RUBYOPT)
+
+**Команда:**
+```bash
+RUBYOPT="-r logger" /Users/roman/.gem/ruby/2.6.0/bin/wordmove push --themes --plugins
+```
+
+**Результат:**
+- Стартував, але lftp впав через SSL mismatch
+- Сертифікат `r28.hallo.cloud` не відповідає хосту `81.209.248.242`
+
+---
+
+### 12:58 - Спроба lftp через .env (помилка CRLF)
+
+**Команда:**
+```bash
+set -a; source ./.env; set +a
+```
+
+**Результат:**
+- Помилки `^M` у `.env`, FTP login failed
+
+---
+
+### 12:59 - LFTP sync themes (успіх)
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+set ftp:ssl-protect-data true; cd $FTP_PATH; \
+mirror -R --verbose --only-newer wordpress/wp-content/themes wp-content/themes; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- Теми синхронізовано (передались лише `.DS_Store`)
+
+---
+
+### 13:00 - LFTP sync plugins (timeout)
+
+**Команда:**
+```bash
+... mirror -R --verbose --only-newer wordpress/wp-content/plugins wp-content/plugins ...
+```
+
+**Результат:**
+- Команда тайм-аутнулась (120s/300s)
+
+---
+
+### 13:05 - LFTP sync plugins (успіх)
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+set ftp:ssl-protect-data true; cd $FTP_PATH; \
+mirror -R --verbose --only-newer --exclude-glob .DS_Store --parallel=5 \
+wordpress/wp-content/plugins wp-content/plugins; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- Плагіни синхронізовано
+- `.DS_Store` виключено
+
+---
+
+### 13:06 - LFTP sync uploads (спроби exclude-regex не підтримуються)
+
+**Команди:**
+```bash
+... mirror ... --exclude-regex ...
+... mirror ... --exclude-regexp ...
+```
+
+**Результат:**
+- Опції `--exclude-regex` / `--exclude-regexp` не підтримуються
+
+---
+
+### 13:07 - LFTP sync uploads (успіх, exclude по папках)
+
+**Команда:**
+```bash
+set -a; source <(tr -d '\r' < ./.env); set +a; \
+lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
+set ftp:ssl-protect-data true; cd $FTP_PATH; \
+mirror -R --verbose --only-newer --exclude-glob .DS_Store \
+--exclude '2013/' --exclude '2025/' --exclude '2026/' --parallel=5 \
+wordpress/wp-content/uploads wp-content/uploads; quit" "$FTP_HOST"
+```
+
+**Результат:**
+- uploads синхронізовано
+- `.DS_Store` і папки `2013/`, `2025/`, `2026/` виключені
+
+---
+
+## Файли змінені в цій сесії
+
+1. `backups/bsahlen.prod.sql` — новий дамп БД з URL для production
+2. `log/changelog.md` — додано лог деплою
