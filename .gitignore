@@ -27,3 +27,6 @@ backups/*.sql.gz
 
 # Theme samples (remove secrets)
 wordpress/wp-content/themes/finovate/samples/instagram-feed.json
+
+# Language files (auto-downloaded by WordPress)
+wordpress/wp-content/languages/
