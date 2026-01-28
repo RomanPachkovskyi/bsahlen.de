@@ -1,23 +1,23 @@
 # WordPress core
-wordpress/wp-admin/
-wordpress/wp-includes/
-wordpress/wp-*.php
-wordpress/index.php
-wordpress/license.txt
-wordpress/readme.html
-wordpress/xmlrpc.php
+wp/wp-admin/
+wp/wp-includes/
+wp/wp-*.php
+wp/index.php
+wp/license.txt
+wp/readme.html
+wp/xmlrpc.php
 
 # Uploads (sync via WordMove)
-wordpress/wp-content/uploads/
+wp/wp-content/uploads/
 
 # Cache & temp
-wordpress/wp-content/cache/
-wordpress/wp-content/upgrade/
-wordpress/wp-content/wflogs/
+wp/wp-content/cache/
+wp/wp-content/upgrade/
+wp/wp-content/wflogs/
 *.log
 
 # Local config
-wordpress/wp-config.php
+wp/wp-config.php
 .DS_Store
 .env
 
@@ -26,23 +26,23 @@ backups/*.sql
 backups/*.sql.gz
 
 # Theme samples (remove secrets)
-wordpress/wp-content/themes/finovate/samples/instagram-feed.json
+wp/wp-content/themes/finovate/samples/instagram-feed.json
 
 # Language files (auto-downloaded by WordPress)
-wordpress/wp-content/languages/
+wp/wp-content/languages/
 
 # 3rd party plugins (not in Git, only custom plugins)
-wordpress/wp-content/plugins/duplicate-post/
-wordpress/wp-content/plugins/elementor/
-wordpress/wp-content/plugins/elementor-pro/
-wordpress/wp-content/plugins/lasoon-maintenance/
-wordpress/wp-content/plugins/svg-support/
-wordpress/wp-content/plugins/vamtam-elementor-integration-finovate/
-wordpress/wp-content/plugins/vamtam-importers-e/
-wordpress/wp-content/plugins/wordpress-seo/
+wp/wp-content/plugins/duplicate-post/
+wp/wp-content/plugins/elementor/
+wp/wp-content/plugins/elementor-pro/
+wp/wp-content/plugins/lasoon-maintenance/
+wp/wp-content/plugins/svg-support/
+wp/wp-content/plugins/vamtam-elementor-integration-finovate/
+wp/wp-content/plugins/vamtam-importers-e/
+wp/wp-content/plugins/wordpress-seo/
 
 # Keep only custom plugins (custom-* pattern)
-# Example: wordpress/wp-content/plugins/custom-myplugin/
+# Example: wp/wp-content/plugins/custom-myplugin/
 
 # Backup files
 .env.backup
