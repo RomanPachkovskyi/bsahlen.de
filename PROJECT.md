@@ -92,6 +92,7 @@
 
 | Date | Direction | Reason | Notes |
 |------|-----------|--------|-------|
+| 2026-01-28 | Local → Production | Deploy local changes + photos | 228 replacements, 112MB, file: bsahlen_prod_20260128_165245.sql |
 | 2026-01-28 | Pre-migration backup | Safety before structure change | 104MB SQL dump |
 | 2026-01-21 | Local → Production | Deploy child theme | URL replacement, 157 replacements |
 | 2026-01-19 | Production → Local | Initial setup | Full import via phpMyAdmin |
