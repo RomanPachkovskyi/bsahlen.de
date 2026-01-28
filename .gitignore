@@ -30,3 +30,21 @@ wordpress/wp-content/themes/finovate/samples/instagram-feed.json
 
 # Language files (auto-downloaded by WordPress)
 wordpress/wp-content/languages/
+
+# 3rd party plugins (not in Git, only custom plugins)
+wordpress/wp-content/plugins/duplicate-post/
+wordpress/wp-content/plugins/elementor/
+wordpress/wp-content/plugins/elementor-pro/
+wordpress/wp-content/plugins/lasoon-maintenance/
+wordpress/wp-content/plugins/svg-support/
+wordpress/wp-content/plugins/vamtam-elementor-integration-finovate/
+wordpress/wp-content/plugins/vamtam-importers-e/
+wordpress/wp-content/plugins/wordpress-seo/
+
+# Keep only custom plugins (custom-* pattern)
+# Example: wordpress/wp-content/plugins/custom-myplugin/
+
+# Backup files
+.env.backup
+*.backup
+MIGRATION_STATE.txt
