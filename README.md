@@ -21,7 +21,7 @@ WordPress corporate website for BSahlen Financial Consulting.
 
 ```bash
 # Navigate to project
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 # Start Docker containers
 docker-compose up -d
@@ -56,7 +56,7 @@ open http://localhost:8081
 - `MIGRATION_PLAN.md` - Step-by-step migration guide
 - `MIGRATION.md` - General migration guide
 
-## Structure (After Migration)
+## Structure (SOP v2.0)
 
 ```
 /
@@ -64,13 +64,25 @@ open http://localhost:8081
 ├── .htaccess              ← Routing rules
 ├── wp/                    ← WordPress
 │   └── wp-content/
-│       ├── themes/        ← Custom themes
-│       ├── mu-plugins/    ← Must-use plugins
-│       └── plugins/       ← 3rd party (not in Git)
+│       ├── themes/        ← Custom themes (in Git)
+│       ├── mu-plugins/    ← Must-use plugins (in Git)
+│       ├── plugins/       ← 3rd party (NOT in Git)
+│       ├── uploads/       ← Media (NOT in Git)
+│       └── languages/     ← Auto-downloaded (NOT in Git)
 ├── maintenance/           ← Landing page
+├── docs/                  ← Technical documentation
+│   ├── migration/         ← Migration docs
+│   ├── scripts/           ← Utility scripts
+│   └── archive/           ← Old/deprecated files
+├── backups/               ← Database dumps (NOT in Git)
 ├── docker-compose.yml     ← Local environment
-├── wp-config-local.php    ← Local DB config (in Git)
-└── wp-config-production.php ← Production template (in Git)
+├── wp-config-local.php    ← Local template (in Git)
+├── wp-config-production.php ← Production template (in Git)
+├── CLAUDE.md              ← AI instructions
+├── PROJECT.md             ← Knowledge base ⭐
+├── SERVER_RULES.md        ← Hosting rules
+├── SOP.md                 ← Quick reference
+└── README.md              ← This file
 ```
 
 ## Mode Switching

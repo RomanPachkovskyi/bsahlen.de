@@ -30,7 +30,7 @@
 ### 0.1. Бекап локальної бази даних
 
 ```bash
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 # Переконатись що Docker запущено
 docker ps | grep bsahlende
@@ -110,7 +110,7 @@ open http://localhost:8080
 ### 1.1. Створити PROJECT.md
 
 ```bash
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 ```
 
 Створити файл `PROJECT.md` (використати template з bootstrap.sh, адаптувати для bsahlen.de):
@@ -224,7 +224,7 @@ git commit -m "docs: add SOP v2.0 project structure (Phase 1)"
 ### 2.1. Оновити .gitignore
 
 ```bash
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 # Відкрити .gitignore і додати:
 # wordpress/wp-content/languages/
@@ -306,7 +306,7 @@ du -sh .git
 ### 3.1. Зупинити Docker
 
 ```bash
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 docker-compose down
 
@@ -838,7 +838,7 @@ open https://bsahlen.de/wp-admin
 
 ```bash
 # Локально
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 # Повернутись до бекапу
 git checkout backup-pre-migration
@@ -869,7 +869,7 @@ git push origin main --force
 Якщо щось зламалось локально:
 
 ```bash
-cd ~/GitHub/bsahlen.de
+cd ~/Project/bsahlen.de
 
 # Зупинити Docker
 docker-compose down

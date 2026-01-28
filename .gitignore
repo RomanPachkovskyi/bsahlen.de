@@ -47,4 +47,6 @@ wp/wp-content/plugins/wordpress-seo/
 # Backup files
 .env.backup
 *.backup
-MIGRATION_STATE.txt
+
+# Archive folder
+docs/archive/

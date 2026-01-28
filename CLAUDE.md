@@ -1,354 +1,435 @@
-# bsahlen.de - Проект WordPress
+# AI INSTRUCTIONS: bsahlen.de
+
+> **Universal entry point for ALL AI assistants (Claude, Cursor, Copilot, etc.)**
 
 ---
 
-## ВАЖЛИВО: Правила ведення документації
+## 🎯 Start Here
 
-### База знань (CLAUDE.md)
-- **Оновлювати** після кожної сесії
-- Писати **максимально детально**
-- Додавати нові секції при потребі
-- Зберігати **єдиний стиль** оформлення (заголовки, таблиці, код-блоки)
+**When you first connect to this project, follow these steps:**
 
-### Лог змін (log/changelog.md)
-- Записувати **ВСЕ** що обговорюємо
-- **Супер-детально**: команди, помилки, рішення, причини
-- Вказувати **час** кожної дії
-- Структура: `### ЧАС - Назва кроку` → опис → код → результат
-- Нова сесія = новий розділ `## ДАТА: Опис сесії`
+### 1. Identify Project Type
 
-### Стиль оформлення
-- Заголовки: `#` для назви, `##` для розділів, `###` для підрозділів
-- Код: завжди в блоках ` ```bash ` або ` ```php `
-- Таблиці: для порівнянь і структурованих даних
-- Списки: `-` для пунктів, `1.` для послідовностей
-- **Жирний** для важливого, `код` для команд/файлів
-
-### Код
-- **Коментарі в коді — ТІЛЬКИ англійською мовою**
-- Назви змінних/функцій — англійською
-- Child theme: `bsahlen` (не bsahlen-custom)
-
----
-
-## Статус
-- **Локальне середовище:** налаштовано і працює
-- **Docker:** запущено (WordPress + MySQL + phpMyAdmin)
-- **Git:** репозиторій ініціалізовано; перший push успішний після видалення `instagram-feed.json`
-- **Файли:** скачано з продакшену через FTP (748 MB, 13,072 файлів)
-- **База даних:** імпортована з продакшену (105 MB)
-- **Дата налаштування:** 2026-01-19
-
----
-
-## Локальні URL
-- **Сайт:** http://localhost:8080
-- **Адмінка:** http://localhost:8080/wp-admin
-- **phpMyAdmin:** http://localhost:8081
-
----
-
-## Docker команди
+Check these files:
 ```bash
-cd ~/GitHub/bsahlen.de
+# If these exist → SOP v2.0 project (migrated or new)
+- PROJECT.md (main knowledge base)
+- wp/ folder (not wordpress/)
+- index.php + .htaccess in root (router)
 
-# Запустити
-docker-compose up -d
-
-# Зупинити
-docker-compose down
-
-# Логи
-docker-compose logs -f
-
-# Перезапуск
-docker restart bsahlende-wordpress-1
+# If these exist → Legacy project (needs migration)
+- wordpress/ folder
+- No PROJECT.md
+- No router files
 ```
 
----
+### 2. Read Project Knowledge
 
-## WP-CLI через Docker
+**Primary source:** `PROJECT.md`
+- Current state (BUILD/LANDING/LIVE)
+- Tech stack
+- Open questions
+- Changelog
+- Deploy notes
 
-```bash
-# Інформація про WP-CLI
-docker-compose run --rm wpcli --info
+**Secondary sources:**
+- `SERVER_RULES.md` - hosting rules
+- `SOP.md` - workflow quick reference
+- `README.md` - quick start
 
-# Підготовка SQL для продакшену (URL replace, без зміни локальної БД)
-docker-compose run --rm wpcli search-replace \
-  'http://localhost:8080' 'https://bsahlen.de' \
-  --skip-columns=guid --all-tables \
-  --export=/backups/bsahlen.prod.sql
-```
+### 3. Check Project Path
 
----
+**Current standard:** `~/Project/[project-name]`
+**Old format:** `~/GitHub/[project-name]` (deprecated)
 
-## Корисні команди
-
-### Бекап БД (перед важливими змінами)
-```bash
-# Експорт БД з Docker з timestamp
-docker-compose run --rm wpcli db export /backups/backup_$(date +%Y%m%d_%H%M%S).sql
-```
-
-### Безпека Git (перевірка .env)
-```bash
-# Перевірити що не комітимо .env або інші секрети
-git status | grep -E '\.env|credentials|password'
-
-# Подивитись що в staging перед commit
-git diff --cached --name-only
-```
-
-### Очистка старих бекапів
-```bash
-# Показати всі бекапи старші за 7 днів
-find backups -name "backup_*.sql" -mtime +7
-
-# Видалити бекапи старші за 7 днів (обережно!)
-find backups -name "backup_*.sql" -mtime +7 -delete
-```
+⚠️ If you see `~/GitHub/` anywhere - update to `~/Project/`
 
 ---
 
-## Git
+## 📋 Core Principles
 
-- **Гілка:** `main`
-- **Remote:** `https://github.com/RomanPachkovskyi/bsahlen.de.git`
-- **Локальний user.name/user.email:** `Roman Pachkovskyi` / `rpachkovskyi@gmail.com`
-- **.gitignore:** WordPress core, uploads, cache, `wp-config.php`, `.env`, `backups/*.sql`, `wordpress/wp-content/themes/finovate/samples/instagram-feed.json`
-- **Push Protection:** токен видалено (файл `instagram-feed.json` вилучено з репозиторію)
+### Documentation
 
----
+**Single source of truth:** `PROJECT.md`
+- Update after every significant change
+- Keep Changelog section current
+- Mark completed tasks with [x]
 
-## Структура проекту
-```
-~/GitHub/bsahlen.de/
-├── docker-compose.yml      # Docker конфігурація
-├── .gitignore              # Git виключення
-├── .env                    # Креденшли продакшену (НЕ комітити!)
-├── CLAUDE.md               # Цей файл
-├── wordpress/              # WordPress (весь сайт)
-│   ├── wp-config.php       # Локальні налаштування БД
-│   ├── wp-content/
-│   │   ├── themes/finovate/  # Активна тема
-│   │   ├── plugins/
-│   │   └── uploads/
-│   └── ...
-└── backups/
-    └── wp_ynu3n.sql        # Дамп бази з продакшену
-```
+**Style:**
+- Headers: `#` top, `##` sections, `###` sub-sections
+- Code blocks: ` ```bash ` or ` ```php `
+- Tables for comparisons
+- Lists: `-` for bullets, `1.` for steps
+- **Bold** for important, `code` for commands/files
 
----
+**Code comments:**
+- ALWAYS in English
+- Variables/functions in English
+- User-facing text in project language (DE for bsahlen.de)
 
-## База даних
+### Git Rules
 
-### Локальна (Docker)
-- Host: `db`
-- Database: `bsahlen`
-- User: `wp`
-- Password: `wp`
-- Table prefix: `XutfWi7d_`
+**AI can:**
+- Edit files locally
+- Create commits with descriptive messages
+- Prepare commit messages for owner review
 
-### Продакшен (Plesk)
-- Host: `localhost:3306` (MariaDB v10.11.13)
-- Database: `wp_ynu3n`
-- User/Password: див. `.env`
+**AI cannot:**
+- Execute `git push`
+- Execute `git merge`, `git rebase`
+- Make force push
+- Delete branches
 
----
+**Owner does:**
+- All git push operations (via GitHub Desktop or CLI)
+- Branch management
+- Production deploys
 
-## Хостинг (Plesk)
+### File Organization
 
-### FTP доступ
-- Протокол: FTPS (SSL обов'язковий)
-- Креденшли: див. `.env`
-- Шлях: `/httpdocs`
+**In root (important files only):**
+- PROJECT.md (knowledge base)
+- SERVER_RULES.md (hosting rules)
+- SOP.md (quick reference)
+- README.md (user-facing)
+- CLAUDE.md (this file)
 
-### SSH
-- **Заборонено** хостером
+**In docs/ (technical files):**
+- `docs/migration/` - migration documentation
+- `docs/scripts/` - utility scripts
+- `docs/archive/` - old/deprecated files
 
-### Сервер
-- IP: 81.209.248.242
-- SSL: Let's Encrypt
-- URL: https://bsahlen.de
-
----
-
-## wp-config.php
-
-**ВАЖЛИВО:** wp-config.php різний на локалці і продакшені!
-
-Файл в `.gitignore` — не синхронізується.
-
-При деплої WordMove автоматично пропускає wp-config.php.
+**Never commit:**
+- `.env` files
+- `backups/` folder
+- Database dumps (*.sql)
+- Uploads (`wp/wp-content/uploads/`)
+- Languages (`wp/wp-content/languages/`)
+- 3rd party plugins (except parent themes if needed)
 
 ---
 
-## Тема
+## 🚀 Common Tasks
 
-- **Назва:** Finovate
-- **Шлях:** `wordpress/wp-content/themes/finovate/`
-- **Тип:** Преміум тема з Elementor
-
----
-
-## Інструменти встановлені
-
-- **Docker Desktop** — локальний сервер
-- **lftp** — FTP клієнт для синхронізації
-- **WordMove** — встановлено як user gem (потрібен PATH `~/.gem/ruby/2.6.0/bin`)
-- **PHP CLI** — встановлено (Homebrew, `/usr/local/bin/php`)
-- **WP-CLI** — встановлено (`/usr/local/bin/wp`)
-- **gh** (GitHub CLI) — авторизований як RomanPachkovskyi
-
----
-
-## Перевірки 2026-01-20
-
-- **WordMove:** встановлено (user gem); PATH `~/.gem/ruby/2.6.0/bin`
-- **lftp:** встановлено (`/usr/local/bin/lftp`)
-- **Movefile:** створено (sql_adapter: `default`, використовує `.env`)
-- **.env:** існує і не порожній (креденшли зберігаються тут)
-- **PATH:** рядок для WordMove додано у `~/.zshrc`
-- **PHP CLI:** встановлено (`/usr/local/bin/php`)
-- **WP-CLI:** працює, але є warning через PHP 8.5 (`react/promise` deprecation)
-
----
-
-## Перевірки 2026-01-21
-
-- **Docker:** `wordpress`, `db`, `phpmyadmin` запущені
-- **HTTP:** `http://localhost:8080` та `http://localhost:8081` відповідають `200 OK`
-- **Git:** робоче дерево чисте
-
----
-
-## Workflow деплою
-
-### Локальна розробка → Production
+### Start Local Environment
 
 ```bash
-# 1. Працюємо локально (localhost:8080)
-# 2. Тестуємо зміни
+cd ~/Project/bsahlen.de
 
-# 3. Експорт БД з заміною URL
-docker-compose run --rm wpcli search-replace \
-  'http://localhost:8080' 'https://bsahlen.de' \
-  --skip-columns=guid --all-tables \
-  --export=/backups/bsahlen.prod.sql
-
-# 4. Підтягнути змінні з .env (CRLF fix)
-set -a; source <(tr -d '\r' < ./.env); set +a
-
-# 5. Themes
-lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
-  set ftp:ssl-protect-data true; cd $FTP_PATH; \
-  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
-  wordpress/wp-content/themes wp-content/themes; quit" "$FTP_HOST"
-
-# 6. Plugins
-lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
-  set ftp:ssl-protect-data true; cd $FTP_PATH; \
-  mirror -R --verbose --only-newer --exclude-glob .DS_Store --parallel=5 \
-  wordpress/wp-content/plugins wp-content/plugins; quit" "$FTP_HOST"
-
-# 7. Uploads (без 2013/2025/2026)
-lftp -u "$FTP_USER,$FTP_PASS" -e "set ssl:verify-certificate no; set ftp:ssl-force true; \
-  set ftp:ssl-protect-data true; cd $FTP_PATH; \
-  mirror -R --verbose --only-newer --exclude-glob .DS_Store \
-  --exclude '2013/' --exclude '2025/' --exclude '2026/' --parallel=5 \
-  wordpress/wp-content/uploads wp-content/uploads; quit" "$FTP_HOST"
-
-# 8. Імпорт БД на хостингу (Plesk → phpMyAdmin)
-# 9. Перевірка сайту на production
-```
-
-**Примітка:** WordMove має проблеми (Ruby/SSL mismatch) — використовуємо WP-CLI + lftp напряму.
-
-### Останній деплой
-- **Дата:** 2026-01-21 17:23
-- **Що залито:**
-  - Themes (child theme `bsahlen`)
-  - Plugins (включно з новим `duplicate-post`)
-  - Uploads (Elementor CSS, без 2013/2025/2026)
-- **БД:** `backups/bsahlen.prod.sql` (104MB, 157 replacements)
-- **Статус:** ✅ Завершено і працює на production
-
-### ⚠️ ВАЖЛИВО: Після кожного деплою
-**Обов'язково регенерувати Elementor CSS на production:**
-1. Зайти: https://bsahlen.de/wp-admin
-2. Elementor → Tools → Regenerate CSS & Data
-3. Натиснути **"Regenerate Files"**
-4. Hard refresh сайт (Ctrl+Shift+R)
-
-**Без цього кроку сайт буде без стилів!**
-
----
-
-## Child Theme: bsahlen
-
-**Шлях:** `wordpress/wp-content/themes/bsahlen/`
-
-```
-bsahlen/
-├── style.css           ← Custom CSS
-├── functions.php       ← Enqueue styles/scripts
-└── assets/
-    └── js/
-        └── custom.js   ← Custom JavaScript
-```
-
-### Mega Menu система
-
-**Класи:**
-- `bsa-mega-overlay` — темний overlay з blur (opacity 0.5, blur 3px)
-- `bsa-mega-open` — на body коли меню відкрите
-- `bsa-mega-active` — на активному пункті меню (чиє mega menu відкрите)
-- `.e-current` — пункт меню поточної сторінки (WordPress)
-
-**Hover логіка:**
-- Elementor hover: `#F7F5F1` (світло-бежевий), padding 12px/14px, border-radius 30px
-- Активний пункт (`.bsa-mega-active`) — **завжди** має Elementor hover стилі (зафіксовано через CSS)
-- При hover на будь-який пункт → текст темний `#233D3A`
-- Поточна сторінка (`.e-current`) — завжди темний текст `#233D3A` коли mega menu відкрите
-
-**Кольори тексту:**
-- Неактивні пункти при відкритому меню: `#f7f5f1` (світлий)
-- Активний пункт / hover / поточна сторінка: `#233D3A` (темний)
-
----
-
-## Що ще потрібно зробити
-
-1. [x] Встановити WordMove (Ruby gem)
-2. [x] Створити Movefile для синхронізації
-3. [x] Налаштувати Git репозиторій
-4. [ ] Доробити mega-menu UI (тестування)
-
----
-
-## Команди для швидкого старту наступної сесії
-
-```bash
-# 1. Перевірити чи Docker запущено
+# Check Docker status
 docker ps
 
-# 2. Якщо контейнери не запущені
-cd ~/GitHub/bsahlen.de && docker-compose up -d
+# Start containers (if not running)
+docker-compose up -d
 
-# 3. Відкрити сайт
+# Wait ~30 seconds
+sleep 30
+
+# Test site
 open http://localhost:8080
 ```
 
+### Backup Database
+
+```bash
+# Before any major changes
+docker-compose exec -T db mysqldump -u wp -pwp bsahlen > \
+  backups/backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### Check Git Status
+
+```bash
+git status
+
+# Check for secrets before commit
+git status | grep -E '\.env|credentials|password'
+
+# See what's staged
+git diff --cached --name-only
+```
+
+### Deploy Workflow (Current)
+
+**After SOP v2.0 migration:**
+```
+Local → GitHub (main) → Plesk Git (MANUAL deploy) → Production
+```
+
+**Pre-migration (legacy):**
+```
+Local → Manual FTPS upload → Production
+```
+
+See `PROJECT.md` → Deploy Notes for current method.
+
 ---
 
-## Примітки
+## 📁 Project Structure (SOP v2.0)
 
-- Логін в адмінку — той самий що на продакшені (bsahlen.de)
-- FTP повільний через SSL + багато дрібних файлів
-- SSH заборонено на хостингу — використовуємо FTP
-- Docker акаунт не потрібен для роботи (вийшли з нього)
-- WordMove встановлено як user gem: додати `export PATH="$HOME/.gem/ruby/2.6.0/bin:$PATH"` у shell профіль або запускати `~/.gem/ruby/2.6.0/bin/wordmove`
-- WordMove 5.2.2: за замовчуванням адаптер `wpcli`; потрібен WP-CLI або зміна адаптера в Movefile
-- WP-CLI під PHP 8.5 показує deprecation warning (react/promise); на роботу не впливає
-- Movefile використовує `global.sql_adapter: default` (файловий sync без WP-CLI; для DB sync потрібен доступ до MySQL з хоста або запуск WordMove у контейнері)
-- Для роботи з локальною БД використовувати `docker-compose run --rm wpcli ...` (контейнер бачить `db`)
+```
+~/Project/bsahlen.de/
+├── index.php              ← Router (MODE switching)
+├── .htaccess              ← Routing rules
+├── wp/                    ← WordPress
+│   ├── wp-config.php      ← Local config (not in Git)
+│   └── wp-content/
+│       ├── themes/
+│       │   ├── finovate/  ← Parent theme (IN Git)
+│       │   └── bsahlen/   ← Child theme (IN Git)
+│       ├── plugins/       ← Only custom-* in Git
+│       ├── uploads/       ← NOT in Git
+│       └── languages/     ← NOT in Git
+├── maintenance/           ← Landing page (placeholder)
+│   └── index.html
+├── backups/               ← NOT in Git
+├── docs/                  ← Technical documentation
+│   ├── migration/
+│   ├── scripts/
+│   └── archive/
+├── docker-compose.yml     ← Docker config
+├── wp-config-local.php    ← Local template (IN Git)
+├── wp-config-production.php ← Prod template (IN Git)
+├── PROJECT.md             ← Main knowledge base ⭐
+├── SERVER_RULES.md        ← Hosting rules
+├── SOP.md                 ← Quick reference
+├── CLAUDE.md              ← This file
+└── README.md              ← User-facing docs
+```
+
+---
+
+## 🛠️ Project-Specific Info
+
+### Tech Stack
+
+- **WordPress:** Latest (PHP 8.2)
+- **Database:** MySQL 8.0 (local) / MariaDB 10.11 (production)
+- **Theme:** Finovate (parent) + bsahlen (child)
+- **Page Builder:** Elementor Pro
+- **Hosting:** Plesk (SSH disabled)
+- **SSL:** Let's Encrypt
+
+### URLs
+
+- **Local:** http://localhost:8080
+- **Local Admin:** http://localhost:8080/wp-admin
+- **phpMyAdmin:** http://localhost:8081
+- **Production:** https://bsahlen.de
+
+### Database
+
+**Local (Docker):**
+- Host: `db`
+- Name: `bsahlen`
+- User: `wp`
+- Password: `wp`
+- Prefix: `XutfWi7d_`
+
+**Production (Plesk):**
+- See `.env` file (not in Git)
+
+### Special Features
+
+**Mega Menu System:**
+- Custom overlay with blur effect
+- Active state indicators
+- See child theme: `wp/wp-content/themes/bsahlen/`
+
+**Elementor:**
+- After structure changes: Regenerate CSS!
+- wp-admin → Elementor → Tools → Regenerate Files
+
+---
+
+## ⚠️ Critical Rules
+
+### Before ANY Production Changes
+
+1. ✅ Read `PROJECT.md` → Project State
+2. ✅ Check for Open Questions
+3. ✅ Backup production (files + DB)
+4. ✅ Test locally first
+5. ✅ Know rollback plan
+
+### STOP Rules
+
+**If ANY of these apply, STOP and ASK owner:**
+
+- ❌ Instruction is unclear or ambiguous
+- ❌ Missing required data
+- ❌ Action might affect production
+- ❌ Need to push to Git
+- ❌ Need to import DB to production
+- ❌ Change MODE (maintenance ↔ live)
+- ❌ Modify wp-config.php on production
+
+### Never Do Without Permission
+
+- Push to Git (owner only)
+- Deploy to production (owner decision)
+- Delete files from production
+- Modify production database directly
+- Change production wp-config.php
+- Force push or rewrite Git history
+
+---
+
+## 🔄 Workflow for AI
+
+### 1. Session Start
+
+```bash
+# Read project status
+cat PROJECT.md | grep -A 10 "Project State"
+
+# Check Docker
+docker ps | grep bsahlen
+
+# Start if needed
+cd ~/Project/bsahlen.de && docker-compose up -d
+```
+
+### 2. Make Changes
+
+- Edit files as requested
+- Test locally (http://localhost:8080)
+- Document changes (mental notes for commit message)
+
+### 3. Commit Preparation
+
+```bash
+# Check what changed
+git status
+
+# Review changes
+git diff
+
+# Stage files
+git add [files]
+
+# Prepare commit message (for owner to review)
+git commit -m "type: description
+
+Detailed explanation of what and why
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+### 4. Update Documentation
+
+- Update `PROJECT.md` → Changelog
+- Update `PROJECT.md` → Tech Stack (if changed)
+- Mark completed tasks with [x]
+
+### 5. Inform Owner
+
+Tell owner:
+- What was done
+- What files changed
+- Commit message prepared
+- Next steps (push? deploy?)
+
+---
+
+## 📚 Documentation Reference
+
+### For This Project
+
+**Must read first:**
+- `PROJECT.md` - current state, knowledge base
+- `SERVER_RULES.md` - hosting setup, deploy rules
+
+**Reference:**
+- `SOP.md` - workflow quick guide
+- `README.md` - quick start for users
+- `docs/migration/` - migration history (if applicable)
+
+### For Studio Standards
+
+**In `docs/`:**
+- `docs/SOP_v2.md` - full SOP standard
+- `docs/SOP_IMPROVEMENTS.md` - lessons learned
+- `docs/scripts/bootstrap.sh` - new project creator
+
+### For Migration
+
+**If migrating legacy project:**
+- `docs/migration/MIGRATION.md` - general guide
+- `docs/migration/MIGRATION_PLAN.md` - step-by-step
+- `docs/migration/MIGRATION_AUDIT.md` - analysis template
+
+---
+
+## 🆘 Troubleshooting
+
+### "Site shows white screen"
+
+1. Check Docker logs: `docker-compose logs wordpress`
+2. Check wp-config.php paths
+3. Check `wp/wp-content/debug.log`
+
+### "Styles broken after changes"
+
+1. Regenerate Elementor CSS
+2. Hard refresh: Cmd+Shift+R (Mac) or Ctrl+Shift+R (Win)
+3. Clear browser cache
+
+### "Docker volume issues"
+
+1. Check volumes: `docker volume ls`
+2. Restart: `docker-compose down && docker-compose up -d`
+3. Restore DB from backups/ if needed
+
+### "Git conflicts"
+
+1. Check status: `git status`
+2. If unsure: STOP and ask owner
+3. Never force push without permission
+
+---
+
+## 📞 Support
+
+**GitHub:** https://github.com/RomanPachkovskyi/bsahlen.de
+**Issues:** For production problems
+**Owner:** Roman Pachkovskyi
+
+---
+
+## 🎓 Learning Resources
+
+### WordPress + Docker
+
+- Docker commands: `docker-compose --help`
+- WP-CLI: `docker-compose run --rm wpcli --help`
+
+### Git Workflow
+
+- Studio standard: see `docs/SOP_v2.md`
+- Commit conventions: semantic commit messages
+
+### Plesk Hosting
+
+- Git deploy: see `SERVER_RULES.md`
+- No SSH access (use FTP if needed)
+
+---
+
+**Version:** 2.0 (SOP v2.0 compliant)
+**Last updated:** 2026-01-28
+**Project status:** See `PROJECT.md` for current state
+
+---
+
+## 🚨 Emergency Contacts
+
+**If production is down:**
+1. Check `docs/migration/MIGRATION_PLAN.md` Phase 9 (Rollback)
+2. Restore from backup (files + DB)
+3. Contact owner immediately
+
+**For critical decisions:**
+- Always ask owner first
+- Document everything in PROJECT.md
+- Keep communication clear and concise
