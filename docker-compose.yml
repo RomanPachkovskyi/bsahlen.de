@@ -4,17 +4,23 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./wp:/var/www/html:cached
+      - ./wp/wp-content:/var/www/html/wp-content:cached
+      - ./wp/wp-config.php:/var/www/html/wp-config.php:cached
+      - ./wp/.htaccess:/var/www/html/.htaccess:cached
       - ./php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     environment:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: bsahlen
       WORDPRESS_DB_USER: wp
       WORDPRESS_DB_PASSWORD: wp
+      WP_REDIS_HOST: redis
+      WP_REDIS_PORT: 6379
+      WP_REDIS_CLIENT: predis
     extra_hosts:
       - "localhost:host-gateway"
     depends_on:
       - db
+      - redis
 
   db:
     image: mysql:8.0
@@ -34,15 +40,23 @@ services:
     environment:
       PMA_HOST: db
 
+  redis:
+    image: redis:7-alpine
+
   wpcli:
     image: wordpress:cli-php8.2
     volumes:
       - ./wp:/var/www/html:cached
       - ./backups:/backups
+    environment:
+      WP_REDIS_HOST: redis
+      WP_REDIS_PORT: 6379
+      WP_REDIS_CLIENT: predis
     working_dir: /var/www/html
     entrypoint: ["wp", "--allow-root"]
     depends_on:
       - db
+      - redis
 
 volumes:
   db_data:

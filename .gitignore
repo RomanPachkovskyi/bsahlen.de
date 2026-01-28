@@ -36,10 +36,14 @@ wp/wp-content/plugins/duplicate-post/
 wp/wp-content/plugins/elementor/
 wp/wp-content/plugins/elementor-pro/
 wp/wp-content/plugins/lasoon-maintenance/
+wp/wp-content/plugins/redis-cache/
 wp/wp-content/plugins/svg-support/
 wp/wp-content/plugins/vamtam-elementor-integration-finovate/
 wp/wp-content/plugins/vamtam-importers-e/
 wp/wp-content/plugins/wordpress-seo/
+
+# Redis drop-in
+wp/wp-content/object-cache.php
 
 # Keep only custom plugins (custom-* pattern)
 # Example: wp/wp-content/plugins/custom-myplugin/

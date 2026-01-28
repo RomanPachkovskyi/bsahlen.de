@@ -28,7 +28,8 @@
 
 - **WordPress:** Latest (via Plesk)
 - **PHP:** 8.2
-- **Database:** MariaDB 10.11.13
+- **Database:** MariaDB 10.11.13 (production) / MySQL 8.0 (local)
+- **Cache:** Redis 7 (local, додано 2026-01-28)
 - **Theme:** Finovate (parent) + bsahlen (child theme)
 - **Page Builder:** Elementor Pro
 - **Key Plugins:**
@@ -36,6 +37,7 @@
   - Yoast SEO
   - SVG Support
   - Vamtam Elementor Integration
+  - Redis Object Cache (local performance)
 
 ## Goals
 
@@ -79,6 +81,7 @@
 
 | Date | Change | By |
 |------|--------|----|
+| 2026-01-28 | 🚀 **Created modular SOP v2.1:** Розбито SOP на модулі (docs/sop/: basics, deployment, migration, improvements), оновлено автодокументацію, додано Redis cache, мінімізовано README.md, перенесено технічні файли | AI |
 | 2026-01-28 | ✅ **Completed SOP v2.0 migration (Phases 0-6):** Backup, structure change (wordpress→wp), Git cleanup (5,580 files removed), router added, Docker updated, all docs created | AI |
 | 2026-01-28 | 📁 **Reorganized project:** Created docs/ folder, moved technical files, consolidated documentation, updated all paths (~/GitHub → ~/Project) | AI |
 | 2026-01-21 | Deployed child theme with custom mega menu to production | AI |

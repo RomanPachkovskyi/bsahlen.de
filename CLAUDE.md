@@ -34,7 +34,12 @@ Check these files:
 
 **Secondary sources:**
 - `SERVER_RULES.md` - hosting rules
-- `SOP.md` - workflow quick reference
+- `SOP.md` - workflow navigator (modular structure)
+- `docs/sop/` - detailed SOP modules:
+  - `basics.md` - Git, Docker, структура, філософія
+  - `deployment.md` - Plesk, deploy, MODE, DB, rollback
+  - `migration.md` - міграція старих проектів
+  - `improvements.md` - lessons learned (10 gaps)
 - `README.md` - quick start
 
 ### 3. Check Project Path
@@ -205,6 +210,7 @@ See `PROJECT.md` → Deploy Notes for current method.
 
 - **WordPress:** Latest (PHP 8.2)
 - **Database:** MySQL 8.0 (local) / MariaDB 10.11 (production)
+- **Cache:** Redis 7 (local, додано 2026-01-28)
 - **Theme:** Finovate (parent) + bsahlen (child)
 - **Page Builder:** Elementor Pro
 - **Hosting:** Plesk (SSH disabled)
@@ -316,11 +322,88 @@ Detailed explanation of what and why
 Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 ```
 
-### 4. Update Documentation
+### 4. Update Documentation ⚠️ CRITICAL
 
-- Update `PROJECT.md` → Changelog
-- Update `PROJECT.md` → Tech Stack (if changed)
-- Mark completed tasks with [x]
+**AI MUST automatically update PROJECT.md after significant changes!**
+
+#### When to Update PROJECT.md:
+
+**1. Tech Stack Changed:**
+```markdown
+## Tech Stack
+- **Cache:** Redis 7 (додано 2026-01-28)
+- **CDN:** Cloudflare (додано 2026-01-28)
+```
+
+**2. Changelog After Every Significant Change:**
+```markdown
+## Changelog
+| Date | Change | By |
+|------|--------|----| | 2026-01-28 | Додано Redis cache для performance | AI |
+| 2026-01-28 | Створено модульну SOP структуру | AI |
+```
+
+**What counts as "significant":**
+- Added/removed services (Redis, CDN, etc.)
+- Structural changes (folder reorganization, etc.)
+- Deploy/migration milestones
+- Configuration changes (docker-compose.yml, etc.)
+- New features or major fixes
+
+**3. Open Questions If Unclear:**
+```markdown
+## Open Questions
+- Redis persistence strategy? (In-memory vs RDB)
+- Should we add CDN for static assets?
+```
+
+**4. DB Sync Notes After DB Operations:**
+```markdown
+## DB Sync Notes
+| Date | Direction | Reason | Notes |
+|------|-----------|--------|-------|
+| 2026-01-28 | Local → Prod | Deploy | 157 replacements |
+```
+
+#### How to Update:
+
+1. **Read PROJECT.md first** to understand current state
+2. **Make your changes** to the codebase
+3. **Immediately update PROJECT.md:**
+   - Add changelog entry with date
+   - Update relevant sections (Tech Stack, etc.)
+   - Add Open Questions if needed
+4. **Commit both code + PROJECT.md together**
+
+#### Example Workflow:
+
+```bash
+# 1. Make changes (e.g., add Redis)
+vim docker-compose.yml
+
+# 2. Update PROJECT.md
+vim PROJECT.md
+# Add to Changelog:
+# | 2026-01-28 | Додано Redis cache | AI |
+# Add to Tech Stack:
+# - **Cache:** Redis 7
+
+# 3. Commit together
+git add docker-compose.yml PROJECT.md
+git commit -m "feat(cache): Add Redis for performance
+
+Changes:
+- Added redis service to docker-compose.yml
+- Configured Redis Cache plugin
+- Updated PROJECT.md changelog and tech stack
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+```
+
+**❌ Never skip PROJECT.md updates!**
+- It's the single source of truth
+- Owner relies on it to understand project state
+- Other AIs need it for context
 
 ### 5. Inform Owner
 

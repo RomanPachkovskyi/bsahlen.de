@@ -1,118 +1,274 @@
-# SOP: WordPress + Git + Plesk (Studio Standard)
+# SOP: WordPress + Git + Plesk
 
-> Full SOP: see `SOP_v2.md`. This is a project-specific quick reference.
+**Studio Standard Workflow (v2.1 — Modular)**
 
-## Source of Truth
+---
 
-| What | Where |
-|------|-------|
-| Code | GitHub (main branch) |
-| Content/Media | Production (Plesk hosting) |
-| Development | Local (Docker, 90% of work) |
+## 🎯 Почни тут
 
-## Git Rules
+Ця документація складається з модулів. Вибери що тебе цікавить:
 
-- **Push/Merge:** Owner only (via GitHub Desktop)
-- **AI can:** Edit files locally, prepare commits, create branches
-- **AI cannot:** Push, merge, rebase
+### 📘 Новий проект?
 
-## Never in Git
+1. Прочитай **[Basics](docs/sop/basics.md)** — структура, Git, Docker, філософія
+2. Запусти `docs/scripts/bootstrap.sh` для створення проекту
+3. Подивись **[Deployment](docs/sop/deployment.md)** — як налаштувати Plesk і деплоїти
 
-- `wp/wp-content/uploads/`
-- `wp/wp-content/languages/`
-- `wp/wp-content/plugins/*` (3rd party, except custom-*)
-- `wp/wp-config.php` (active config)
-- Database dumps
-- Secrets (.env, credentials)
+### 🔄 Міграція старого проекту?
 
-## Always in Git
+1. Прочитай **[Migration](docs/sop/migration.md)** — покрокова інструкція міграції
+2. Використай `docs/migration/MIGRATION.md` для детального плану
+3. Подивись **[Improvements](docs/sop/improvements.md)** — чого не робити (lessons learned)
 
-- `wp/wp-content/themes/*` (all themes, including parent)
-- `wp/wp-content/mu-plugins/*` (if any)
-- `maintenance/` (landing page)
-- Router files (`index.php`, `.htaccess` in root)
-- Config templates (`wp-config-local.php`, `wp-config-production.php`)
-- Documentation (PROJECT.md, SERVER_RULES.md, etc.)
+### 🚀 Готовий проект?
 
-## Deploy Flow
+**Швидкий довідник:**
+- **Git правила:** [Basics § 4](docs/sop/basics.md#4-git--правила)
+- **Deploy процес:** [Deployment § 1](docs/sop/deployment.md#1-deploy-process)
+- **MODE switching:** [Deployment § 3](docs/sop/deployment.md#3-режими-роботи-maintenance--live)
+- **Plesk setup:** [Deployment § 2](docs/sop/deployment.md#2-plesk-git-setup-покрокова-інструкція)
+- **Database sync:** [Deployment § 5](docs/sop/deployment.md#5-база-даних-db)
+- **Для ШІ:** [Basics § 7](docs/sop/basics.md#7-для-ші-обовязково)
+
+### 📚 Lessons Learned
+
+- **[Improvements](docs/sop/improvements.md)** — 10 виявлених gaps в SOP v2.0 на основі реальної міграції bsahlen.de
+
+---
+
+## Модулі документації
+
+| Модуль | Що містить | Для кого |
+|--------|------------|----------|
+| **[basics.md](docs/sop/basics.md)** | Структура, Git, Docker, філософія, документація | Всі |
+| **[deployment.md](docs/sop/deployment.md)** | Plesk setup, deploy, MODE, DB, rollback | Deploy & Production |
+| **[migration.md](docs/sop/migration.md)** | Міграція старих проектів на SOP v2.0 (10 фаз) | Migration |
+| **[improvements.md](docs/sop/improvements.md)** | 10 gaps + рішення, lessons learned | Best practices |
+
+---
+
+## Quick Reference (bsahlen.de)
+
+**Project specifics для цього проекту.**
+
+### URLs
+
+| Environment | URL | Status |
+|-------------|-----|--------|
+| Local | http://localhost:8080 | 🟢 Development |
+| Production | https://bsahlen.de | 🟢 LIVE |
+
+### Current MODE
+
+```php
+// index.php
+define('MODE', 'live'); // Сайт публічний
+```
+
+### Tech Stack
+
+- **WordPress:** Latest (PHP 8.2)
+- **Theme:** Finovate (parent) + bsahlen (child)
+- **Page Builder:** Elementor Pro
+- **Database:** MariaDB 10.11 (production) / MySQL 8.0 (local)
+- **Cache:** Redis 7 (local)
+- **Hosting:** Plesk
+
+### Deploy Flow
 
 ```
 Local → GitHub (main) → Plesk manual pull → Production
 ```
 
-**Deploy process:**
-1. Work locally
-2. Test thoroughly
-3. Commit changes
-4. Owner pushes to GitHub
-5. Plesk → Git → Pull Updates → Deploy (manual action)
+**Owner actions:**
+- Commit + Push to GitHub
+- Plesk → Git → Pull Updates → Deploy (manual)
 
-## Mode Switching
+**ШІ actions:**
+- Edit files locally
+- Test thoroughly
+- Prepare commit message
+- Update PROJECT.md changelog
 
-Edit `index.php` in root:
-```php
-define('MODE', 'live'); // or 'maintenance'
+---
+
+## Критичні правила
+
+### ✅ Завжди
+
+- Читати **PROJECT.md** перед початком роботи
+- Оновлювати **PROJECT.md** після змін (автоматично для ШІ!)
+- Тестувати локально перед commit
+- Backup перед production deploy
+- Regenerate Elementor CSS після структурних змін
+
+### ❌ Ніколи
+
+- `git push`, `git merge`, `git rebase` (тільки власник!)
+- Додавати в Git: uploads/, languages/, .env, backups/
+- Деплоїти на production без backup
+- Змінювати MODE без підтвердження
+- Робити зміни без документації в PROJECT.md
+
+### ⚠️ STOP-RULE
+
+**Зупинись і запитай власника якщо:**
+- Інструкція неясна або двозначна
+- Бракує даних для виконання
+- Дія може вплинути на production
+- Потрібен Git push
+- Критична зміна (DB import, MODE change, etc.)
+
+---
+
+## Для ШІ: Автодокументація
+
+**⚠️ КРИТИЧНО ВАЖЛИВО:**
+
+ШІ **ЗОБОВ'ЯЗАНИЙ** оновлювати PROJECT.md після будь-яких значних змін:
+
+### Коли оновлювати PROJECT.md:
+
+1. **Tech Stack змінився:**
+   ```markdown
+   ## Tech Stack
+   - **Cache:** Redis 7 (додано 2026-01-28)
+   ```
+
+2. **Changelog після кожної важливої зміни:**
+   ```markdown
+   ## Changelog
+   | Date | Change | By |
+   |------|--------|----|
+   | 2026-01-28 | Додано Redis cache для performance | AI |
+   ```
+
+3. **Open Questions якщо щось неясно:**
+   ```markdown
+   ## Open Questions
+   - Redis persistence strategy? (In-memory vs RDB)
+   ```
+
+4. **DB Sync Notes після операцій з БД:**
+   ```markdown
+   ## DB Sync Notes
+   | Date | Direction | Reason | Notes |
+   |------|-----------|--------|-------|
+   | 2026-01-28 | Local → Prod | Deploy Redis | 157 replacements |
+   ```
+
+### Commit Message Format:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
 ```
 
-Commit → Push → Plesk Deploy → Done.
+**Приклад:**
+```
+feat(cache): Add Redis for performance optimization
 
-**Current for bsahlen.de:** MODE = 'live'
+Changes:
+- Added redis service to docker-compose.yml
+- Configured Redis Cache plugin
+- Updated environment variables for WP_REDIS_*
 
-## Local Commands
+Tech Stack updated in PROJECT.md
+Changelog updated with deployment notes
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+**Детально:** [Basics § 7](docs/sop/basics.md#ші-зобовязаний)
+
+---
+
+## Команди (Docker)
 
 ```bash
-# Start environment
+# Navigate
+cd ~/Project/bsahlen.de
+
+# Start
 docker-compose up -d
 
 # Stop
 docker-compose down
 
-# View logs
+# Logs
 docker-compose logs -f wordpress
 
-# Access site
+# Access
 open http://localhost:8080
+open http://localhost:8081  # phpMyAdmin
 
-# phpMyAdmin
-open http://localhost:8081
-
-# Backup database
+# DB Backup
 docker-compose exec -T db mysqldump -u wp -pwp bsahlen > backups/backup_$(date +%Y%m%d).sql
+
+# Container status
+docker ps
 ```
-
-## AI Rules
-
-1. Follow SOP strictly
-2. Maintain PROJECT.md and SERVER_RULES.md
-3. Code comments: English only
-4. **STOP-RULE:** If unclear or risky → ask owner first
-5. Never push to Git (owner does this)
-6. Always test locally before preparing commit
-
-## Project-Specific Notes
-
-- **Child theme:** `bsahlen` (keep in Git)
-- **Parent theme:** `finovate` (keep in Git, sometimes needed)
-- **Custom mega menu:** CSS + JS in child theme
-- **Elementor:** After structure changes, regenerate CSS
-- **Database:** Always use URL replacement when syncing
-- **Deploy:** MANUAL mode in Plesk (owner-controlled)
-
-## Critical Actions (Need Owner Approval)
-
-- Database import to production
-- Changing MODE to/from 'maintenance'
-- Any wp-config.php changes on production
-- Force push to Git
-- Structural changes to production
-
-## Migration Notes
-
-**Status:** In progress (migrating to SOP v2.0 structure)
-**See:** MIGRATION_PLAN.md for detailed steps
-**Backup:** Always available via `pre-migration-backup` tag
 
 ---
 
-**Version:** 2.0 (adapted for bsahlen.de)
-**Last updated:** 2026-01-28
+## Структура документації
+
+```
+~/Project/bsahlen.de/
+├── CLAUDE.md              ← AI entry point (universal, auto-detect)
+├── PROJECT.md             ← Knowledge base ⭐ (single source of truth)
+├── SOP.md                 ← This file (navigator)
+├── SERVER_RULES.md        ← Hosting rules, Go-Live checklist
+├── docs/
+│   ├── sop/               ← Modular SOP
+│   │   ├── basics.md      ← Git, Docker, структура
+│   │   ├── deployment.md  ← Plesk, deploy, MODE, DB
+│   │   ├── migration.md   ← Міграція старих проектів
+│   │   └── improvements.md ← Lessons learned (10 gaps)
+│   ├── migration/         ← Migration docs
+│   │   ├── MIGRATION.md   ← Universal guide (68 pages)
+│   │   └── MIGRATION_PLAN.md ← Project-specific plan
+│   └── scripts/
+│       └── bootstrap.sh   ← New project creator
+└── index.php              ← Router (MODE switching)
+```
+
+---
+
+## Історія версій
+
+| Версія | Дата | Зміни |
+|--------|------|-------|
+| 1.3 | — | Оригінал (2 репо) |
+| 2.0 | 2025-01 | Монорепозиторій, router в Git |
+| **2.1** | **2026-01** | **Модульна структура, автодокументація, 10 improvements** |
+
+**Що нового в v2.1:**
+- ✅ Модульна структура SOP (basics, deployment, migration, improvements)
+- ✅ Детальні інструкції для міграції існуючих проектів
+- ✅ Plesk Git setup з 8 кроками
+- ✅ Rollback procedures (3 рівні)
+- ✅ Автодокументація для ШІ (обов'язкове оновлення PROJECT.md)
+- ✅ 10 виявлених gaps вирішено
+- ✅ Lessons learned з реального проекту
+
+---
+
+## Підтримка
+
+**GitHub:** https://github.com/RomanPachkovskyi/bsahlen.de
+**Issues:** https://github.com/RomanPachkovskyi/bsahlen.de/issues
+
+**Документація:**
+- Прочитай модулі в `docs/sop/`
+- Використай checklist з `docs/migration/`
+- Подивись приклади в PROJECT.md
+
+---
+
+**Версія:** 2.1 (Modular)
+**Останнє оновлення:** 2026-01-28
+**Next:** Прочитай [basics.md](docs/sop/basics.md) або [migration.md](docs/sop/migration.md)
