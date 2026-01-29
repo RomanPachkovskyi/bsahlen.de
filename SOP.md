@@ -58,6 +58,22 @@
 
 ---
 
+## 2.1 Router + .htaccess (важливо для WP в /wp)
+
+Якщо WordPress фізично знаходиться в `/wp`, потрібно мапити старі шляхи:
+
+```apache
+# .htaccess (root)
+RewriteRule ^wp-content/(.*)$ /wp/wp-content/$1 [L,NC]
+RewriteRule ^wp-includes/(.*)$ /wp/wp-includes/$1 [L,NC]
+RewriteRule ^wp-admin/(.*)$ /wp/wp-admin/$1 [L,NC]
+RewriteRule ^wp-login\.php$ /wp/wp-login.php [L,NC]
+```
+
+Це запобігає 404/504 для статичних файлів після міграції з кореня.
+
+---
+
 ## 3. Git — правила
 
 ### 3.1 Що в Git

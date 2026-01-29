@@ -21,7 +21,8 @@ wp/wp-config.php
 .DS_Store
 .env
 
-# Database dumps
+# Database dumps & backups
+backups/
 backups/*.sql
 backups/*.sql.gz
 
@@ -54,3 +55,7 @@ wp/wp-content/object-cache.php
 
 # Archive folder
 docs/archive/
+
+# Hosting logs (keep folder, ignore contents)
+logs/*
+!logs/.gitkeep

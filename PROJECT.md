@@ -101,6 +101,7 @@ Site is public and operational.
 
 | Date | Change | By |
 |------|--------|----|
+| 2026-01-29 | Added .htaccess legacy rewrites for /wp-content, /wp-includes, /wp-admin; documented /wp migration fixes | AI |
 | 2026-01-29 | Updated bootstrap.sh to SOP v3.0 (removed CLAUDE.md, full SOP, backups/) | AI |
 | 2026-01-29 | Added SERVER_RULES.md (SOP v3.0 compliance) | AI |
 | 2026-01-29 | Simplified documentation: SOP v3.0 (single file), removed CLAUDE.md, cleaned docs/ | AI |

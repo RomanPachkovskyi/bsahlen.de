@@ -173,6 +173,11 @@ define('MODE', 'live'); // or 'maintenance'
 ```apache
 # .htaccess
 RewriteEngine On
+# Legacy paths → /wp (when WP moved out of root)
+RewriteRule ^wp-content/(.*)$ /wp/wp-content/$1 [L,NC]
+RewriteRule ^wp-includes/(.*)$ /wp/wp-includes/$1 [L,NC]
+RewriteRule ^wp-admin/(.*)$ /wp/wp-admin/$1 [L,NC]
+RewriteRule ^wp-login\.php$ /wp/wp-login.php [L,NC]
 # ... (rest from bootstrap.sh)
 ```
 
