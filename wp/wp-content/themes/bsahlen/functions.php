@@ -28,3 +28,10 @@ function bsahlen_enqueue_scripts() {
         true // Load in footer
     );
 }
+
+/**
+ * Disable WordPress image resize
+ * Keep only original uploaded images to save disk space
+ */
+add_filter('intermediate_image_sizes_advanced', '__return_empty_array');
+add_filter('big_image_size_threshold', '__return_false');
