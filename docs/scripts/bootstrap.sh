@@ -127,6 +127,10 @@ mkdir -p wp/wp-content/plugins
 mkdir -p maintenance
 mkdir -p backups
 mkdir -p docs
+mkdir -p workspace/screenshots
+mkdir -p workspace/content
+mkdir -p workspace/media
+mkdir -p workspace/temp
 
 log_ok "Folder structure created"
 
@@ -200,6 +204,10 @@ Thumbs.db
 
 # ----- Archive (historical files) -----
 docs/archive/
+
+# ----- Workspace (temporary files for AI/owner exchange) -----
+workspace/
+!workspace/README.md
 GITIGNORE
 
 log_ok ".gitignore created"

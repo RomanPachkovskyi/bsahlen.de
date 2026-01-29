@@ -21,6 +21,7 @@
 ├── index.php          ← Router
 ├── wp/                ← WordPress
 ├── maintenance/       ← Landing page
+├── workspace/         ← Робоча папка (обмін файлами)
 ├── docker-compose.yml ← Docker config
 └── docs/              ← Додаткова документація
 ```

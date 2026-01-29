@@ -56,6 +56,9 @@ wp/wp-content/object-cache.php
 # Archive folder
 docs/archive/
 
+# Workspace (temporary files for AI/owner exchange)
+workspace/
+
 # Hosting logs (keep folder, ignore contents)
 logs/*
 !logs/.gitkeep
