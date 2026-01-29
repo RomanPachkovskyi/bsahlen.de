@@ -101,6 +101,9 @@ Site is public and operational.
 
 | Date | Change | By |
 |------|--------|----|
+| 2026-01-29 | Fixed missing header logo (used correct custom_logo ID in theme template) | AI |
+| 2026-01-29 | Aggressive media cleanup: removed uploads/2025/02 and /2025/03 + DB references | AI |
+| 2026-01-29 | Prepared production-ready DB export (search-replace localhost → https://bsahlen.de) | AI |
 | 2026-01-29 | Added workspace/ folder for file exchange (AI/owner), updated SOP, bootstrap | AI |
 | 2026-01-29 | Added .htaccess legacy rewrites for /wp-content, /wp-includes, /wp-admin; documented /wp migration fixes | AI |
 | 2026-01-29 | Updated bootstrap.sh to SOP v3.0 (removed CLAUDE.md, full SOP, backups/) | AI |
@@ -118,6 +121,7 @@ Site is public and operational.
 
 | Date | Direction | Reason | Notes |
 |------|-----------|--------|-------|
+| 2026-01-29 | Local → Production | Prepared DB export after cleanup | 419 replacements, file `backups/production_ready_20260129_161323.sql` (pending import) |
 | 2026-01-29 | Local → Production | Deploy service images + workspace | 243 replacements, 114MB |
 | 2026-01-28 | Local → Production | Deploy local changes | 228 replacements, 112MB |
 | 2026-01-21 | Local → Production | Deploy child theme | 157 replacements |
@@ -141,6 +145,10 @@ Site is public and operational.
 **After any structure changes:**
 - Regenerate Elementor CSS (wp-admin → Elementor → Tools)
 - Hard refresh browser (Ctrl+Shift+R)
+
+**DB/MEDIA maintenance (2026-01-29):**
+- Aggressive cleanup removed `wp/wp-content/uploads/2025/02` and `wp/wp-content/uploads/2025/03`
+- DB references stripped; backup before cleanup: `backups/backup_before_aggressive_cleanup_20260129_160814.sql`
 
 **Deploy workflow:**
 1. Test locally
