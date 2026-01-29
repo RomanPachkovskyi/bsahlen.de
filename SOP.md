@@ -101,8 +101,8 @@
 
 | Роль | Дозволено |
 |------|-----------|
-| **Власник** | Commit, Push, Merge (через GitHub Desktop) |
-| **ШІ** | Редагувати файли локально, готувати commit message |
+| **Власник** | `git push` (через GitHub Desktop) |
+| **ШІ** | Редагувати файли, `git add`, `git commit` |
 
 > ШІ **НЕ має права** виконувати `git push`, `git merge`, `git rebase`.
 
@@ -555,14 +555,14 @@ git diff
 # 2. Stage
 git add [files]
 
-# 3. Commit (готує ШІ, виконує власник)
+# 3. Commit (виконує ШІ)
 git commit -m "type: description
 
 Details of what changed
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
-# 4. Push (тільки власник!)
+# 4. Push (тільки власник — GitHub Desktop)
 git push origin main
 ```
 

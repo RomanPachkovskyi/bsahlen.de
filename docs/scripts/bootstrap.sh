@@ -641,8 +641,8 @@ This allows controlled bidirectional DB synchronization when needed.
 
 | Role | Allowed |
 |------|---------|
-| **Owner** | Commit, Push, Merge (via GitHub Desktop) |
-| **AI** | Edit files locally, prepare commit messages |
+| **Owner** | `git push` (via GitHub Desktop) |
+| **AI** | Edit files, `git add`, `git commit` |
 
 > AI **CANNOT** execute `git push`, `git merge`, `git rebase`.
 
@@ -1005,14 +1005,14 @@ git diff
 # 2. Stage
 git add [files]
 
-# 3. Commit (AI prepares, owner executes)
+# 3. Commit (AI executes)
 git commit -m "type: description
 
 Details of what changed
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
 
-# 4. Push (owner only!)
+# 4. Push (owner only — GitHub Desktop)
 git push origin main
 ```
 
