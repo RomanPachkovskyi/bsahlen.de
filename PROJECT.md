@@ -101,6 +101,7 @@ Site is public and operational.
 
 | Date | Change | By |
 |------|--------|----|
+| 2026-01-29 | Added workspace/ folder for file exchange (AI/owner), updated SOP, bootstrap | AI |
 | 2026-01-29 | Added .htaccess legacy rewrites for /wp-content, /wp-includes, /wp-admin; documented /wp migration fixes | AI |
 | 2026-01-29 | Updated bootstrap.sh to SOP v3.0 (removed CLAUDE.md, full SOP, backups/) | AI |
 | 2026-01-29 | Added SERVER_RULES.md (SOP v3.0 compliance) | AI |
@@ -117,6 +118,7 @@ Site is public and operational.
 
 | Date | Direction | Reason | Notes |
 |------|-----------|--------|-------|
+| 2026-01-29 | Local → Production | Deploy service images + workspace | 243 replacements, 114MB |
 | 2026-01-28 | Local → Production | Deploy local changes | 228 replacements, 112MB |
 | 2026-01-21 | Local → Production | Deploy child theme | 157 replacements |
 | 2026-01-19 | Production → Local | Initial setup | Full import via phpMyAdmin |
