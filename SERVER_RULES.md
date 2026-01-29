@@ -1,183 +1,155 @@
-# SERVER_RULES: Maintenance ↔ WordPress
+# SERVER_RULES: bsahlen.de
 
-## ⚠️ MIGRATION IN PROGRESS
+## Hosting Structure
 
-**Current state:** Migrating from old structure to SOP v2.0
-
-**Old structure (current production):**
-- Path: `/httpdocs` (WordPress root)
-- No router
-- Deploy: manual FTPS via lftp
-- WordPress in root directory
-
-**Target structure (after migration):**
-- Path: `/httpdocs` (monorepo root)
-- Router: `index.php` + `.htaccess` in root
-- Deploy: Git auto-deploy (MANUAL mode)
-- WordPress in `/httpdocs/wp/` subdirectory
+```
+/httpdocs/                    ← Document root (Plesk)
+├── index.php                 ← Router (MODE switching)
+├── .htaccess                 ← Routing rules
+├── wp/                       ← WordPress installation
+│   ├── wp-admin/
+│   ├── wp-includes/
+│   ├── wp-content/
+│   │   ├── themes/
+│   │   │   ├── finovate/     ← Parent theme
+│   │   │   └── bsahlen/      ← Child theme (customizations)
+│   │   ├── plugins/          ← All plugins (installed via WP Admin)
+│   │   └── uploads/          ← Media files
+│   └── wp-config.php         ← Production config
+└── maintenance/
+    └── index.html            ← Maintenance page
+```
 
 ---
 
-## Hosting Structure (Target - SOP v2.0)
+## Server Info
 
-```
-/httpdocs/                    ← Git deploys HERE (root)
-├── index.php                 ← Router (from Git)
-├── .htaccess                 ← Routing rules (from Git)
-├── wp/                       ← WordPress
-│   ├── wp-admin/             ← WP Core (from Plesk installer)
-│   ├── wp-includes/          ← WP Core (from Plesk installer)
-│   ├── wp-content/
-│   │   ├── themes/           ← From Git (Finovate + bsahlen)
-│   │   ├── mu-plugins/       ← From Git (if any)
-│   │   ├── plugins/          ← Installed via WP Admin (NOT in Git)
-│   │   ├── uploads/          ← Media (NOT in Git)
-│   │   └── languages/        ← Auto-downloaded (NOT in Git)
-│   ├── wp-config.php         ← Created manually on hosting
-│   └── index.php             ← WP Core
-├── maintenance/              ← From Git
-│   └── index.html            ← Landing page (placeholder)
-└── [other git files]         ← docker-compose.yml, docs, etc.
-```
+| Parameter | Value |
+|-----------|-------|
+| **Provider** | Plesk |
+| **IP** | 81.209.248.242 |
+| **Domain** | bsahlen.de |
+| **SSL** | Let's Encrypt (auto-renewal) |
+| **PHP** | 8.2 |
+| **Database** | MariaDB 10.11.13 |
+| **DB Prefix** | XutfWi7d_ |
+
+---
+
+## Access
+
+| Method | Status | Notes |
+|--------|--------|-------|
+| **FTP/FTPS** | Available | Via Plesk credentials |
+| **SSH** | Disabled | Blocked by hosting provider |
+| **Plesk Panel** | Available | Full admin access |
+| **phpMyAdmin** | Available | Via Plesk |
+
+---
+
+## Git Deploy
+
+| Setting | Value |
+|---------|-------|
+| **Repository** | https://github.com/RomanPachkovskyi/bsahlen.de |
+| **Branch** | main |
+| **Deploy to** | /httpdocs |
+| **Mode** | MANUAL |
+
+**Deploy workflow:**
+1. Owner pushes to GitHub (main branch)
+2. Plesk → Git → Pull Updates
+3. Plesk → Git → Deploy
+4. Verify site
+5. Elementor → Regenerate CSS (if needed)
+
+---
 
 ## Modes
 
-### MODE = 'live' (current for bsahlen.de)
+### MODE = 'live' (current)
 
 | Visitor | Sees |
 |---------|------|
-| Everyone | WordPress |
+| Everyone | WordPress site |
 
-**Use case:** Site is public and fully operational.
-
-### MODE = 'maintenance' (not used, but available)
+### MODE = 'maintenance'
 
 | Visitor | Sees |
 |---------|------|
 | Public | `/maintenance/index.html` |
 | Admin (logged in) | WordPress |
-| Direct `/wp/*` requests | WordPress |
+| Direct `/wp/*` | WordPress |
 
-**Use case:** Site under development, but landing page is public and indexed.
+**How to switch:**
+1. Edit `index.php` line 12: `define('MODE', 'maintenance');`
+2. Commit + Push
+3. Plesk → Deploy
 
-## How to Switch Modes
+**Emergency switch (on server):**
+- Plesk File Manager → `/httpdocs/index.php` → Edit
+- Will be overwritten on next deploy!
 
-### Option A: Via Git (recommended)
+---
 
-1. Edit `index.php` locally:
-   ```php
-   define('MODE', 'live'); // or 'maintenance'
-   ```
-2. Commit & Push
-3. Plesk auto-deploys → mode switched
+## Go-Live Checklist
 
-### Option B: Direct on hosting (emergency only)
+- [x] Content ready
+- [x] SEO configured (Yoast)
+- [x] SSL active (Let's Encrypt)
+- [x] MODE = 'live'
+- [x] Tested on desktop
+- [x] Tested on mobile
+- [x] Elementor CSS regenerated
+- [x] Custom mega menu working
 
-1. Plesk File Manager → `/httpdocs/index.php`
-2. Edit MODE value
-3. Save
+**Status: LIVE since 2026-01-21**
 
-⚠️ **Warning:** Direct edits will be overwritten on next Git deploy!
+---
 
-## Checklist: Go Live (Already Done for bsahlen.de)
+## Rollback Checklist
 
-- [x] All content ready in WordPress
-- [x] SEO configured (titles, descriptions, sitemap)
-- [x] SSL certificate active
-- [x] MODE set to `'live'` in `index.php`
-- [x] Public access working
-- [x] Site is LIVE
+**If something breaks after deploy:**
 
-## Checklist: Enable Maintenance (rollback scenario)
-
-- [ ] Change `MODE` to `'maintenance'` in `index.php`
-- [ ] Commit & Push
-- [ ] Verify public sees maintenance page
-- [ ] Verify admin can still access `/wp/wp-admin`
-
-## Production Server Info
-
-**Hosting:** Plesk
-**Domain:** bsahlen.de
-**IP:** 81.209.248.242
-**SSL:** Let's Encrypt (automatic renewal)
-**PHP:** 8.2 (configured via Plesk)
-**Database:** MariaDB 10.11.13
-
-**Access:**
-- **FTP/FTPS:** Available (credentials in .env)
-- **SSH:** ❌ Disabled by host
-- **Plesk Panel:** Available (web interface)
-
-## Git Deployment (Target)
-
-**Repository:** https://github.com/RomanPachkovskyi/bsahlen.de
-**Branch:** main
-**Deploy to:** /httpdocs
-**Mode:** MANUAL (owner-controlled)
-
-**Deploy process:**
-1. Push to GitHub main branch
-2. Plesk → Git → "Pull Updates"
-3. Review changes
-4. Click "Deploy" (manual action)
-
-**What gets deployed:**
-- Router files (index.php, .htaccess)
-- WordPress themes (from `/wp/wp-content/themes/`)
-- MU plugins (if any)
-- Maintenance page
-- Documentation
-
-**What stays on server (NOT overwritten):**
-- `/wp/wp-content/uploads/` (media files)
-- `/wp/wp-config.php` (database config)
-- `/wp/wp-content/plugins/` (3rd party plugins)
-- `/wp/wp-content/languages/` (auto-downloaded)
-
-## File Permissions
-
-After deploy, ensure:
-- `/wp/wp-content/uploads/` is writable (755 or 775)
-- `/wp/wp-config.php` is protected (644 or 640)
-
-## Backup Strategy
-
-**Before any production deploy:**
-1. Backup database via Plesk
-2. Backup `/httpdocs` via FTP (or Plesk backup tool)
-3. Keep at least 2 recent backups
-
-**Local backups:**
-- Database dumps in `/backups/` (excluded from Git)
-- Pre-migration backup: `PRE_MIGRATION_20260128_*.sql`
-
-## Emergency Rollback
-
-If deploy breaks production:
-
-1. **Via Git:**
+1. [ ] Switch MODE = 'maintenance' (emergency via Plesk File Manager)
+2. [ ] Identify issue (check `/wp/wp-content/debug.log`)
+3. [ ] Git rollback if needed:
    ```bash
-   git checkout backup-pre-migration
-   git push origin main --force
+   git revert HEAD
+   git push origin main
+   # Plesk → Git → Deploy
    ```
-   Then Plesk → Git → Pull & Deploy
+4. [ ] DB restore if needed (Plesk → Databases → Import)
+5. [ ] Verify site works
+6. [ ] Switch MODE = 'live'
 
-2. **Via Plesk File Manager:**
-   - Restore from backup directory
-   - Restore database from SQL dump
+---
 
-3. **Contact support:** If Plesk/FTP unavailable
+## Special Notes
 
-## Post-Migration Notes
+**Mega Menu:**
+- Custom overlay with blur effect
+- Located in child theme: `wp/wp-content/themes/bsahlen/`
+- Active state indicators on menu items
 
-After successful migration to SOP v2.0:
+**After structure changes:**
+- Always regenerate Elementor CSS (wp-admin → Elementor → Tools)
+- Hard refresh browser (Ctrl+Shift+R)
 
-- ✅ Router active (`index.php` + `.htaccess`)
-- ✅ WordPress in `/wp/` subdirectory
-- ✅ Git auto-deploy configured (MANUAL mode)
-- ✅ All URLs updated in database
-- ✅ Elementor CSS regenerated
-- ✅ Site tested and verified working
+**Database sync:**
+- URL replacement required when moving DB between environments
+- Local: `http://localhost:8080`
+- Production: `https://bsahlen.de`
 
-**Last updated:** 2026-01-28
+---
+
+## Emergency Contacts
+
+| Role | Access |
+|------|--------|
+| Project Owner | GitHub, Plesk, WP Admin |
+| AI Assistant | Local files only (no push) |
+
+---
+
+**Last updated:** 2026-01-29

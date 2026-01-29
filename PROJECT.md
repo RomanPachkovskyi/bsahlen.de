@@ -1,157 +1,147 @@
 # PROJECT: bsahlen.de
 
-## Snapshot — 2026-01-28
+## Snapshot — 2026-01-29
 
 | Environment | URL | Status |
 |-------------|-----|--------|
-| Production  | https://bsahlen.de | 🟢 LIVE |
-| Local       | http://localhost:8080 | 🟢 Running |
+| Production | https://bsahlen.de | 🟢 LIVE |
+| Local | http://localhost:8080 | 🟢 Running |
+
+---
 
 ## Project State
 
-**Current: LIVE** ✅
+**Current: LIVE**
 
-- [x] BUILD — local development
-- [x] LANDING — maintenance page live, WP in development
-- [x] LIVE — WordPress public
+Site is public and operational.
 
-**⚠️ MIGRATION IN PROGRESS:** Migrating from legacy structure to SOP v2.0 (Monorepo)
+---
 
 ## About
 
 **Website:** Corporate website for financial consulting
 **Client:** BSahlen Financial Consulting
 **Language:** German (DE)
-**CMS:** WordPress with Elementor
+
+---
 
 ## Tech Stack
 
 - **WordPress:** Latest (via Plesk)
 - **PHP:** 8.2
 - **Database:** MariaDB 10.11.13 (production) / MySQL 8.0 (local)
-- **Cache:** Redis 7 (local, додано 2026-01-28)
-- **Theme:** Finovate (parent) + bsahlen (child theme)
+- **Cache:** Redis 7 (local)
+- **Theme:** Finovate (parent) + bsahlen (child)
 - **Page Builder:** Elementor Pro
 - **Key Plugins:**
   - Elementor + Elementor Pro
   - Yoast SEO
   - SVG Support
   - Vamtam Elementor Integration
-  - Redis Object Cache (local performance)
+  - Redis Object Cache (local)
 
-## Goals
+---
 
-**What we maintain:**
-- Modern, professional design
-- Fast page load
-- SEO optimization
-- Mobile-first approach
-- Custom mega menu with hover effects
+## URLs
 
-**Target audience:**
-- B2B clients
-- Financial sector professionals
-- German-speaking market
+| Environment | URL | Port |
+|-------------|-----|------|
+| Local Site | http://localhost:8080 | 8080 |
+| Local Admin | http://localhost:8080/wp-admin | 8080 |
+| phpMyAdmin | http://localhost:8081 | 8081 |
+| Production | https://bsahlen.de | — |
 
-**Key pages:**
-- Homepage with hero section
-- Services overview
-- About/Team
-- Contact form
-- Blog/News section
+---
+
+## Database
+
+**Local (Docker):**
+- Host: `db`
+- Database: `bsahlen`
+- User: `wp`
+- Password: `wp`
+- Prefix: `XutfWi7d_`
+
+**Production:** See `.env` file (not in Git)
+
+---
+
+## Hosting
+
+**Provider:** Plesk
+**Domain:** bsahlen.de
+**IP:** 81.209.248.242
+**SSL:** Let's Encrypt (auto-renewal)
+
+**Access:**
+- FTP/FTPS: Available
+- SSH: Disabled by host
+- Plesk Panel: Available
+
+**Deploy:**
+- Method: Plesk Git (MANUAL mode)
+- Repository: https://github.com/RomanPachkovskyi/bsahlen.de
+- Branch: main
+- Deploy to: /httpdocs
+
+---
 
 ## Current Features
 
-- ✅ Custom mega menu with overlay and active states
-- ✅ Child theme for customizations
-- ✅ Elementor-based page builder
-- ✅ SEO configured (Yoast)
-- ✅ SSL active (Let's Encrypt)
-- ✅ Responsive design
+- Custom mega menu with overlay and blur effect
+- Child theme for customizations
+- Elementor-based page builder
+- SEO configured (Yoast)
+- Responsive design
+- SSL active
 
-## Open Questions (Migration-specific)
-
-1. ✅ Parent theme Finovate: Keep in Git (sometimes needed)
-2. ✅ MODE for router: 'live' (site already running)
-3. ✅ Maintenance page: Simple placeholder for structure
-4. ⏳ Plesk Git auto-deploy: Setup as MANUAL mode
-5. ⏳ Production wp-config.php: Need to update paths after migration
+---
 
 ## Changelog
 
 | Date | Change | By |
 |------|--------|----|
-| 2026-01-28 | 🚀 **Created modular SOP v2.1:** Розбито SOP на модулі (docs/sop/: basics, deployment, migration, improvements), оновлено автодокументацію, додано Redis cache, мінімізовано README.md, перенесено технічні файли | AI |
-| 2026-01-28 | ✅ **Completed SOP v2.0 migration (Phases 0-6):** Backup, structure change (wordpress→wp), Git cleanup (5,580 files removed), router added, Docker updated, all docs created | AI |
-| 2026-01-28 | 📁 **Reorganized project:** Created docs/ folder, moved technical files, consolidated documentation, updated all paths (~/GitHub → ~/Project) | AI |
+| 2026-01-29 | Updated bootstrap.sh to SOP v3.0 (removed CLAUDE.md, full SOP, backups/) | AI |
+| 2026-01-29 | Added SERVER_RULES.md (SOP v3.0 compliance) | AI |
+| 2026-01-29 | Simplified documentation: SOP v3.0 (single file), removed CLAUDE.md, cleaned docs/ | AI |
+| 2026-01-28 | Created modular SOP v2.1, added Redis cache, reorganized project structure | AI |
+| 2026-01-28 | Completed SOP v2.0 migration (Phases 0-6): wordpress→wp, Git cleanup, router added | AI |
 | 2026-01-21 | Deployed child theme with custom mega menu to production | AI |
-| 2026-01-20 | Setup WordMove and local development environment | AI |
-| 2026-01-19 | Initial local setup with Docker, imported production DB (105MB) | AI |
+| 2026-01-20 | Setup local development environment with Docker | AI |
+| 2026-01-19 | Initial local setup, imported production DB (105MB) | AI |
+
+---
 
 ## DB Sync Notes
 
 | Date | Direction | Reason | Notes |
 |------|-----------|--------|-------|
-| 2026-01-28 | Local → Production | Deploy local changes + photos | 228 replacements, 112MB, file: bsahlen_prod_20260128_165245.sql |
-| 2026-01-28 | Pre-migration backup | Safety before structure change | 104MB SQL dump |
-| 2026-01-21 | Local → Production | Deploy child theme | URL replacement, 157 replacements |
+| 2026-01-28 | Local → Production | Deploy local changes | 228 replacements, 112MB |
+| 2026-01-21 | Local → Production | Deploy child theme | 157 replacements |
 | 2026-01-19 | Production → Local | Initial setup | Full import via phpMyAdmin |
 
-## Deploy Notes
+---
 
-**Current (Legacy):**
-- Deploy method: Manual via lftp (FTPS)
-- Upload themes, plugins, uploads
-- Database via phpMyAdmin
+## Open Questions
 
-**Target (SOP v2.0):**
-- Deploy method: Plesk Git auto-deploy (MANUAL mode)
-- Branch: main
-- Deploy to: /httpdocs (monorepo root)
+*No open questions currently.*
 
-**Goes to Git:**
-- `/wp/wp-content/themes/*` (including Finovate parent)
-- `/wp/wp-content/mu-plugins/*` (if any)
-- `/maintenance/*` (placeholder)
-- `/index.php` (router)
-- `/.htaccess` (routing rules)
-- `/wp-config-local.php`, `/wp-config-production.php` (templates)
-- Documentation files
+---
 
-**Never in Git:**
-- `/wp/wp-content/uploads/`
-- `/wp/wp-content/languages/`
-- `/wp/wp-content/plugins/*` (3rd party, except custom-*)
-- `/wp/wp-config.php` (active config)
-- `/_db/` or `/backups/` (database dumps)
-- `.env` (secrets)
+## Special Notes
 
-## Migration Status
+**Mega Menu System:**
+- Custom overlay with blur effect
+- Active state indicators
+- Located in child theme: `wp/wp-content/themes/bsahlen/`
 
-**Phase 0:** ✅ Backup & Documentation
-**Phase 1:** 🔄 Creating new files
-**Phase 2:** ⏳ Git cleanup
-**Phase 3:** ⏳ Structure migration (wordpress → wp)
-**Phase 4:** ⏳ Docker update
-**Phase 5:** ⏳ Local testing
-**Phase 6:** ⏳ Git finalization
-**Phase 7:** ⏳ Plesk setup
-**Phase 8:** ⏳ Production deployment
+**After any structure changes:**
+- Regenerate Elementor CSS (wp-admin → Elementor → Tools)
+- Hard refresh browser (Ctrl+Shift+R)
 
-See: `MIGRATION_PLAN.md` for detailed steps
-
-## Post-Migration TODO
-
-- [ ] Test all pages on production after migration
-- [ ] Regenerate Elementor CSS on production
-- [ ] Update Plesk Git to MANUAL deploy mode
-- [ ] Monitor for 24-48h after migration
-- [ ] Clean up old backups after stable period
-
-## Notes
-
-- Local development on Docker (WordPress + MySQL + phpMyAdmin)
-- Production hosted on Plesk (SSH disabled by host)
-- FTP/FTPS for file access (slow due to SSL + many files)
-- Custom child theme path: `wp-content/themes/bsahlen/`
-- Mega menu uses custom JS and overlay system
+**Deploy workflow:**
+1. Test locally
+2. Owner commits and pushes
+3. Plesk → Git → Pull Updates → Deploy
+4. Check production
+5. Regenerate Elementor CSS if needed

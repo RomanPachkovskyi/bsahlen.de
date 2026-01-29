@@ -1,274 +1,602 @@
 # SOP: WordPress + Git + Plesk
 
-**Studio Standard Workflow (v2.1 — Modular)**
+**Studio Standard Operating Procedure (v3.0)**
+
+> Цей документ — універсальний стандарт. Скопіюй в будь-який WordPress проект — ШІ зрозуміє як працювати.
 
 ---
 
-## 🎯 Почни тут
+## 0. Фундамент
 
-Ця документація складається з модулів. Вибери що тебе цікавить:
+**Ключова умова:** Доступ до адмін-панелі сайту має ТІЛЬКИ власник проєкту. Клієнти та сторонні особи доступу не мають.
 
-### 📘 Новий проект?
-
-1. Прочитай **[Basics](docs/sop/basics.md)** — структура, Git, Docker, філософія
-2. Запусти `docs/scripts/bootstrap.sh` для створення проекту
-3. Подивись **[Deployment](docs/sop/deployment.md)** — як налаштувати Plesk і деплоїти
-
-### 🔄 Міграція старого проекту?
-
-1. Прочитай **[Migration](docs/sop/migration.md)** — покрокова інструкція міграції
-2. Використай `docs/migration/MIGRATION.md` для детального плану
-3. Подивись **[Improvements](docs/sop/improvements.md)** — чого не робити (lessons learned)
-
-### 🚀 Готовий проект?
-
-**Швидкий довідник:**
-- **Git правила:** [Basics § 4](docs/sop/basics.md#4-git--правила)
-- **Deploy процес:** [Deployment § 1](docs/sop/deployment.md#1-deploy-process)
-- **MODE switching:** [Deployment § 3](docs/sop/deployment.md#3-режими-роботи-maintenance--live)
-- **Plesk setup:** [Deployment § 2](docs/sop/deployment.md#2-plesk-git-setup-покрокова-інструкція)
-- **Database sync:** [Deployment § 5](docs/sop/deployment.md#5-база-даних-db)
-- **Для ШІ:** [Basics § 7](docs/sop/basics.md#7-для-ші-обовязково)
-
-### 📚 Lessons Learned
-
-- **[Improvements](docs/sop/improvements.md)** — 10 виявлених gaps в SOP v2.0 на основі реальної міграції bsahlen.de
+Це дозволяє контрольовану двосторонню синхронізацію БД за потреби.
 
 ---
 
-## Модулі документації
+## 1. Філософія
 
-| Модуль | Що містить | Для кого |
-|--------|------------|----------|
-| **[basics.md](docs/sop/basics.md)** | Структура, Git, Docker, філософія, документація | Всі |
-| **[deployment.md](docs/sop/deployment.md)** | Plesk setup, deploy, MODE, DB, rollback | Deploy & Production |
-| **[migration.md](docs/sop/migration.md)** | Міграція старих проектів на SOP v2.0 (10 фаз) | Migration |
-| **[improvements.md](docs/sop/improvements.md)** | 10 gaps + рішення, lessons learned | Best practices |
+| Що | Де | Пріоритет |
+|----|-----|-----------|
+| **Код** | GitHub | Єдине джерело правди |
+| **Контент / SEO / Медіа** | Production | Фінальні дані |
+| **Розробка** | Локальне середовище | 90% роботи |
+
+> Локалка ≠ копія продакшна. Локалка = майстерня.
 
 ---
 
-## Quick Reference (bsahlen.de)
+## 2. Структура проєкту (Монорепозиторій)
 
-**Project specifics для цього проекту.**
-
-### URLs
-
-| Environment | URL | Status |
-|-------------|-----|--------|
-| Local | http://localhost:8080 | 🟢 Development |
-| Production | https://bsahlen.de | 🟢 LIVE |
-
-### Current MODE
-
-```php
-// index.php
-define('MODE', 'live'); // Сайт публічний
+```
+[project-name]/
+├── index.php                 ← Router (MODE switching) ✅ Git
+├── .htaccess                 ← Routing rules ✅ Git
+├── wp/                       ← WordPress
+│   ├── wp-content/
+│   │   ├── themes/           ← ✅ Git (всі теми)
+│   │   ├── mu-plugins/       ← ✅ Git
+│   │   ├── plugins/custom-*  ← ✅ Git (тільки кастомні)
+│   │   ├── plugins/[інші]    ← ❌ НЕ Git (встановлюються через WP Admin)
+│   │   ├── uploads/          ← ❌ НЕ Git
+│   │   └── languages/        ← ❌ НЕ Git (auto-downloaded)
+│   ├── wp-admin/             ← ❌ НЕ Git (WP Core)
+│   ├── wp-includes/          ← ❌ НЕ Git (WP Core)
+│   └── wp-config.php         ← ❌ НЕ Git (env-specific)
+├── maintenance/              ← Landing page ✅ Git
+│   └── index.html
+├── backups/                  ← DB dumps ❌ НЕ Git
+├── docs/                     ← Документація ✅ Git
+│   └── archive/              ← Історичні файли ❌ НЕ Git
+├── docker-compose.yml        ← ✅ Git
+├── wp-config-local.php       ← ✅ Git (template)
+├── wp-config-production.php  ← ✅ Git (template)
+├── SOP.md                    ← ✅ Git (цей файл)
+├── README.md                 ← ✅ Git (entry point для ШІ)
+└── PROJECT.md                ← ✅ Git (база знань, веде ШІ)
 ```
 
-### Tech Stack
+---
 
-- **WordPress:** Latest (PHP 8.2)
-- **Theme:** Finovate (parent) + bsahlen (child)
-- **Page Builder:** Elementor Pro
-- **Database:** MariaDB 10.11 (production) / MySQL 8.0 (local)
-- **Cache:** Redis 7 (local)
-- **Hosting:** Plesk
+## 3. Git — правила
 
-### Deploy Flow
+### 3.1 Що в Git
+
+**✅ Зберігається:**
+- Router: `index.php`, `.htaccess`
+- Теми: `wp/wp-content/themes/*` (всі, включно з parent)
+- MU-плагіни: `wp/wp-content/mu-plugins/*`
+- Кастомні плагіни: `wp/wp-content/plugins/custom-*`
+- Maintenance: `maintenance/*`
+- Docker: `docker-compose.yml`, `php.ini`
+- Config templates: `wp-config-local.php`, `wp-config-production.php`
+- Документація: `SOP.md`, `README.md`, `PROJECT.md`
+
+**❌ НЕ зберігається:**
+- Uploads: `wp/wp-content/uploads/`
+- Languages: `wp/wp-content/languages/`
+- WP Core: `wp/wp-admin/`, `wp/wp-includes/`
+- Active config: `wp/wp-config.php`
+- Secrets: `.env`, `.env.*`
+- Backups: `backups/`, `*.sql`
+- 3rd party plugins: `wp/wp-content/plugins/[plugin-name]/`
+
+### 3.2 Плагіни — детальні правила
+
+**✅ В Git:**
+- `custom-*` — будь-які кастомні плагіни
+- Плагіни створені студією з нуля
+- Приватні плагіни (недоступні в WP repo)
+
+**❌ НЕ в Git:**
+- Публічні плагіни з wordpress.org
+- Преміум плагіни (Elementor Pro, ACF Pro, etc.)
+- Будь-які плагіни що можна встановити через WP Admin
+
+**⚠️ Особливі випадки:**
+- Якщо 3rd party плагін має customizations → fork + rename до `custom-*`
+- Якщо плагін deprecated → обговорити з власником
+
+### 3.3 Доступ
+
+| Роль | Дозволено |
+|------|-----------|
+| **Власник** | Commit, Push, Merge (через GitHub Desktop) |
+| **ШІ** | Редагувати файли локально, готувати commit message |
+
+> ШІ **НЕ має права** виконувати `git push`, `git merge`, `git rebase`.
+
+### 3.4 Гілки
+
+- `main` — єдина продакшн-гілка, Plesk тягне її
+- `feature/*` — опційно, для великих змін
+- `dev` — **НЕ використовується**
+
+---
+
+## 4. Локальне середовище (Docker)
+
+### 4.1 Стандартна конфігурація
+
+```yaml
+# docker-compose.yml
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "[port]:80"
+    volumes:
+      - ./wp:/var/www/html:cached
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: [project-name]
+
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: [project-name]
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "[port+1]:80"
+```
+
+### 4.2 Команди
+
+```bash
+cd ~/Project/[project-name]
+
+# Запуск
+docker-compose up -d
+
+# Зупинка
+docker-compose down
+
+# Логи
+docker-compose logs -f wordpress
+
+# Бекап БД
+docker-compose exec -T db mysqldump -u wp -pwp [project-name] > backups/backup_$(date +%Y%m%d_%H%M%S).sql
+
+# WP-CLI
+docker-compose run --rm wpcli [command]
+```
+
+### 4.3 Локальні URL
+
+| Сервіс | URL |
+|--------|-----|
+| WordPress | `http://localhost:[port]` |
+| WP Admin | `http://localhost:[port]/wp-admin` |
+| phpMyAdmin | `http://localhost:[port+1]` |
+
+---
+
+## 5. Deploy
+
+### 5.1 Ланцюжок
 
 ```
 Local → GitHub (main) → Plesk manual pull → Production
 ```
 
-**Owner actions:**
-- Commit + Push to GitHub
-- Plesk → Git → Pull Updates → Deploy (manual)
+**З Git деплоїться:**
+- Router (`index.php`, `.htaccess`)
+- Themes, mu-plugins, custom plugins
+- Maintenance page
+- Config templates, documentation
 
-**ШІ actions:**
-- Edit files locally
-- Test thoroughly
-- Prepare commit message
-- Update PROJECT.md changelog
+**НЕ деплоїться з Git:**
+- WordPress Core (встановлюється через Plesk)
+- Uploads (залишаються на хостингу)
+- `wp-config.php` (створюється вручну на хостингу)
+- 3rd party plugins (встановлюються через WP Admin)
+
+### 5.2 Plesk Git Setup
+
+**Крок 1:** Plesk → Domains → [domain] → Git
+
+**Крок 2:** Repository settings:
+- URL: `https://github.com/[user]/[project-name].git`
+- Branch: `main`
+- Deploy to: `/httpdocs`
+- **Mode: MANUAL** (спочатку завжди Manual!)
+
+**Крок 3:** SSH Keys (якщо приватний repo):
+1. Plesk → Generate Key Pair
+2. Copy Public Key
+3. GitHub → Settings → Deploy keys → Add
+4. Allow write access: **NO**
+
+**Крок 4:** Тестовий Pull (БЕЗ deploy):
+- Plesk → Git → "Pull Updates"
+- Перевірити Output log
+
+**Крок 5:** Перший Deploy:
+1. **Зробити backup production!**
+2. Plesk → Git → "Deploy"
+3. Перевірити сайт
+
+**Крок 6:** Після стабільної роботи (1-2 дні):
+- Mode: Manual → Automatic (опційно)
+
+### 5.3 Post-Deploy Checklist
+
+**Після кожного deploy:**
+1. Перевірити головну сторінку
+2. Перевірити ключові сторінки
+3. **Elementor: Regenerate CSS** (wp-admin → Elementor → Tools)
+4. Hard refresh браузера (Ctrl+Shift+R)
+5. Перевірити на mobile
+6. Check Console для JS errors
 
 ---
 
-## Критичні правила
+## 6. Режими роботи (Router)
 
-### ✅ Завжди
+### 6.1 Два режими
 
-- Читати **PROJECT.md** перед початком роботи
-- Оновлювати **PROJECT.md** після змін (автоматично для ШІ!)
-- Тестувати локально перед commit
-- Backup перед production deploy
-- Regenerate Elementor CSS після структурних змін
+**MODE = 'maintenance'**
+| Відвідувач | Бачить |
+|------------|--------|
+| Публічний | `/maintenance/index.html` |
+| Адмін (залогінений) | WordPress |
+| Прямий `/wp/*` | WordPress |
 
-### ❌ Ніколи
+**MODE = 'live'**
+| Відвідувач | Бачить |
+|------------|--------|
+| Усі | WordPress |
 
-- `git push`, `git merge`, `git rebase` (тільки власник!)
-- Додавати в Git: uploads/, languages/, .env, backups/
-- Деплоїти на production без backup
-- Змінювати MODE без підтвердження
-- Робити зміни без документації в PROJECT.md
+### 6.2 Як перемикати
 
-### ⚠️ STOP-RULE
+**Через Git (рекомендовано):**
+1. Edit `index.php`:
+   ```php
+   define('MODE', 'live'); // або 'maintenance'
+   ```
+2. Commit + Push
+3. Plesk → Deploy
+
+**На хостингу (аварійно):**
+- Plesk File Manager → `/httpdocs/index.php` → Edit
+- ⚠️ Буде перезаписано при наступному deploy!
+
+### 6.3 Default MODE
+
+| Ситуація | MODE |
+|----------|------|
+| Новий проект (bootstrap) | `'maintenance'` |
+| Міграція живого сайту | `'live'` |
+| Міграція сайту в розробці | `'maintenance'` |
+
+**⚠️ При міграції живого сайту — завжди `MODE = 'live'`!**
+
+---
+
+## 7. База даних
+
+### 7.1 Ключове правило
+
+**Будь-який перенос БД = заміна URL.**
+
+| Напрям | Заміна |
+|--------|--------|
+| Production → Local | `https://[domain]` → `http://localhost:[port]` |
+| Local → Production | `http://localhost:[port]` → `https://[domain]` |
+
+### 7.2 URL Replacement
+
+**WP-CLI (рекомендовано):**
+```bash
+docker-compose run --rm wpcli search-replace \
+  'http://localhost:[port]' 'https://[domain]' \
+  --skip-columns=guid --all-tables \
+  --export=/backups/production.sql
+```
+
+**Better Search Replace (плагін):**
+1. WP Admin → Tools → Better Search Replace
+2. Search: `http://localhost:[port]`
+3. Replace: `https://[domain]`
+4. Dry run спочатку!
+
+### 7.3 Backup
+
+**Перед будь-якими DB операціями:**
+```bash
+# Local
+docker-compose exec -T db mysqldump -u wp -pwp [db-name] > backups/backup_$(date +%Y%m%d).sql
+
+# Production
+# Plesk → Databases → Export
+# або phpMyAdmin → Export
+```
+
+---
+
+## 8. Міграція існуючих проектів
+
+### 8.1 Ознаки старого проекту
+
+- Папка `wordpress/` замість `wp/`
+- Немає router файлів в root
+- Немає `maintenance/` папки
+- Git містить uploads/, languages/, 3rd party plugins
+- Шляхи `~/GitHub/` замість `~/Project/`
+
+### 8.2 Процес міграції (10 фаз)
+
+```
+Phase 0: Backup & Documentation     ← Обов'язково!
+Phase 1: Create New Files           ← Router, templates, docs
+Phase 2: Git Cleanup                ← Видалити languages, plugins
+Phase 3: Structure Migration        ← wordpress/ → wp/
+Phase 4: Docker Update              ← Оновити paths
+Phase 5: Local Testing              ← Перевірити все працює
+Phase 6: Git Finalization           ← Commit, push
+Phase 7: Plesk Setup                ← Git deploy (MANUAL)
+Phase 8: Production Deploy          ← ⚠️ Критична фаза!
+Phase 9: Validation                 ← Monitoring 24-48h
+```
+
+**Детальна інструкція:** див. `docs/MIGRATION.md`
+
+### 8.3 Rollback Plan
+
+**Level 1: Git Rollback**
+```bash
+git revert HEAD
+git push origin main
+# Plesk → Git → Deploy
+```
+
+**Level 2: Full Rollback (Files + DB)**
+```bash
+# Plesk Backup Manager → Restore
+```
+
+---
+
+## 9. Документація проекту
+
+### 9.1 ШІ створює ці файли:
+
+**PROJECT.md** — база знань проекту:
+```markdown
+# PROJECT: [project-name]
+
+## Snapshot
+| Environment | URL | Status |
+|-------------|-----|--------|
+| Production | https://[domain] | 🟢 LIVE / 🔴 Down |
+| Local | http://localhost:[port] | 🟢 Running |
+
+## Project State
+**Current: [BUILD/LANDING/LIVE]**
+
+## Tech Stack
+- WordPress: [version]
+- PHP: [version]
+- Theme: [name]
+- Key plugins: [list]
+
+## Changelog
+| Date | Change | By |
+|------|--------|----|
+| YYYY-MM-DD | [description] | AI/Owner |
+
+## Open Questions
+1. [question]
+
+## DB Sync Notes
+| Date | Direction | Reason | Notes |
+|------|-----------|--------|-------|
+
+## Deploy Notes
+[specific deploy instructions for this project]
+```
+
+**SERVER_RULES.md** — правила хостингу:
+```markdown
+# SERVER_RULES: [project-name]
+
+## Hosting Structure
+[опис структури на хостингу]
+
+## Server Info
+- IP: [ip]
+- SSL: [provider]
+- PHP: [version]
+- DB: [type and version]
+
+## Access
+- FTP: [yes/no]
+- SSH: [yes/no]
+- Plesk Panel: [yes/no]
+
+## Modes
+[опис MODE switching для цього проекту]
+
+## Go-Live Checklist
+- [ ] Content ready
+- [ ] SEO configured
+- [ ] SSL active
+- [ ] MODE = 'live'
+- [ ] Tested
+
+## Rollback Checklist
+- [ ] MODE = 'maintenance'
+- [ ] Identify issue
+- [ ] Restore from backup if needed
+```
+
+### 9.2 ШІ оновлює документацію
+
+**Коли оновлювати PROJECT.md:**
+- Після додавання нових сервісів (Redis, CDN, etc.)
+- Після структурних змін
+- Після кожної важливої зміни → Changelog
+- Якщо щось незрозуміло → Open Questions
+
+**Commit разом:**
+```bash
+git add [changed-files] PROJECT.md
+git commit -m "feat: add feature X
+
+- Added X to Y
+- Updated Z
+
+Tech Stack updated in PROJECT.md"
+```
+
+---
+
+## 10. Правила для ШІ
+
+### 10.1 ШІ зобов'язаний
+
+1. **Читати перед роботою:** `README.md` → `SOP.md` → `PROJECT.md`
+2. **Вести PROJECT.md:** оновлювати Changelog, Tech Stack, Open Questions
+3. **Коментарі в коді:** тільки англійською
+4. **Готувати commit messages:** детально, з описом змін
+
+### 10.2 ШІ заборонено
+
+- `git push`, `git merge`, `git rebase`
+- Критичні дії без підтвердження власника
+- Додавати в Git заборонені файли
+- Робити зміни без документації
+
+### 10.3 STOP-RULE
 
 **Зупинись і запитай власника якщо:**
 - Інструкція неясна або двозначна
 - Бракує даних для виконання
 - Дія може вплинути на production
 - Потрібен Git push
-- Критична зміна (DB import, MODE change, etc.)
+- Критична зміна (DB import, MODE change, wp-config.php)
+
+### 10.4 Критичні дії (тільки з підтвердженням)
+
+- DB import у production
+- Зміна MODE на `'live'` (Go-Live)
+- Зміни `wp-config.php` на хостингу
+- Force push
+- Видалення production files
 
 ---
 
-## Для ШІ: Автодокументація
+## 11. Troubleshooting
 
-**⚠️ КРИТИЧНО ВАЖЛИВО:**
+### Білий екран після deploy
 
-ШІ **ЗОБОВ'ЯЗАНИЙ** оновлювати PROJECT.md після будь-яких значних змін:
+1. Перевірити `wp/wp-config.php` paths
+2. Увімкнути debug: `define('WP_DEBUG', true);`
+3. Перевірити `wp/wp-content/debug.log`
 
-### Коли оновлювати PROJECT.md:
+### Стилі зламані
 
-1. **Tech Stack змінився:**
-   ```markdown
-   ## Tech Stack
-   - **Cache:** Redis 7 (додано 2026-01-28)
-   ```
+1. **Elementor:** wp-admin → Elementor → Tools → Regenerate CSS
+2. Hard refresh: Ctrl+Shift+R
+3. Clear browser cache
 
-2. **Changelog після кожної важливої зміни:**
-   ```markdown
-   ## Changelog
-   | Date | Change | By |
-   |------|--------|----|
-   | 2026-01-28 | Додано Redis cache для performance | AI |
-   ```
+### Docker volume issues
 
-3. **Open Questions якщо щось неясно:**
-   ```markdown
-   ## Open Questions
-   - Redis persistence strategy? (In-memory vs RDB)
-   ```
+1. `docker volume ls`
+2. `docker-compose down && docker-compose up -d`
+3. Restore DB from `backups/`
 
-4. **DB Sync Notes після операцій з БД:**
-   ```markdown
-   ## DB Sync Notes
-   | Date | Direction | Reason | Notes |
-   |------|-----------|--------|-------|
-   | 2026-01-28 | Local → Prod | Deploy Redis | 157 replacements |
-   ```
+### 404 після deploy
 
-### Commit Message Format:
+1. Перевірити `.htaccess` в `/httpdocs`
+2. Перевірити `WP_SITEURL` в `wp-config.php`
+3. Plesk → Apache settings
 
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Приклад:**
-```
-feat(cache): Add Redis for performance optimization
-
-Changes:
-- Added redis service to docker-compose.yml
-- Configured Redis Cache plugin
-- Updated environment variables for WP_REDIS_*
-
-Tech Stack updated in PROJECT.md
-Changelog updated with deployment notes
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-```
-
-**Детально:** [Basics § 7](docs/sop/basics.md#ші-зобовязаний)
-
----
-
-## Команди (Docker)
+### Git не розпізнає rename
 
 ```bash
-# Navigate
-cd ~/Project/bsahlen.de
+git config merge.renameLimit 999999
+git add -A
+```
 
-# Start
-docker-compose up -d
+---
 
-# Stop
-docker-compose down
+## 12. Quick Reference
 
-# Logs
-docker-compose logs -f wordpress
+### Старт сесії
 
-# Access
-open http://localhost:8080
-open http://localhost:8081  # phpMyAdmin
-
-# DB Backup
-docker-compose exec -T db mysqldump -u wp -pwp bsahlen > backups/backup_$(date +%Y%m%d).sql
-
-# Container status
+```bash
+# 1. Перевірити Docker
 docker ps
+
+# 2. Запустити якщо потрібно
+cd ~/Project/[project-name] && docker-compose up -d
+
+# 3. Відкрити сайт
+open http://localhost:[port]
+```
+
+### Commit workflow
+
+```bash
+# 1. Перевірити зміни
+git status
+git diff
+
+# 2. Stage
+git add [files]
+
+# 3. Commit (готує ШІ, виконує власник)
+git commit -m "type: description
+
+Details of what changed
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 4. Push (тільки власник!)
+git push origin main
+```
+
+### Deploy workflow
+
+```bash
+# 1. Local testing complete
+# 2. Owner pushes to GitHub
+# 3. Plesk → Git → Pull Updates
+# 4. Plesk → Git → Deploy (MANUAL)
+# 5. Check production site
+# 6. Elementor → Regenerate CSS
+# 7. Update PROJECT.md
 ```
 
 ---
 
-## Структура документації
-
-```
-~/Project/bsahlen.de/
-├── CLAUDE.md              ← AI entry point (universal, auto-detect)
-├── PROJECT.md             ← Knowledge base ⭐ (single source of truth)
-├── SOP.md                 ← This file (navigator)
-├── SERVER_RULES.md        ← Hosting rules, Go-Live checklist
-├── docs/
-│   ├── sop/               ← Modular SOP
-│   │   ├── basics.md      ← Git, Docker, структура
-│   │   ├── deployment.md  ← Plesk, deploy, MODE, DB
-│   │   ├── migration.md   ← Міграція старих проектів
-│   │   └── improvements.md ← Lessons learned (10 gaps)
-│   ├── migration/         ← Migration docs
-│   │   ├── MIGRATION.md   ← Universal guide (68 pages)
-│   │   └── MIGRATION_PLAN.md ← Project-specific plan
-│   └── scripts/
-│       └── bootstrap.sh   ← New project creator
-└── index.php              ← Router (MODE switching)
-```
-
----
-
-## Історія версій
+## Версія
 
 | Версія | Дата | Зміни |
 |--------|------|-------|
-| 1.3 | — | Оригінал (2 репо) |
+| 1.x | — | 2 репозиторії |
 | 2.0 | 2025-01 | Монорепозиторій, router в Git |
-| **2.1** | **2026-01** | **Модульна структура, автодокументація, 10 improvements** |
-
-**Що нового в v2.1:**
-- ✅ Модульна структура SOP (basics, deployment, migration, improvements)
-- ✅ Детальні інструкції для міграції існуючих проектів
-- ✅ Plesk Git setup з 8 кроками
-- ✅ Rollback procedures (3 рівні)
-- ✅ Автодокументація для ШІ (обов'язкове оновлення PROJECT.md)
-- ✅ 10 виявлених gaps вирішено
-- ✅ Lessons learned з реального проекту
+| 2.1 | 2026-01 | Модульна структура |
+| **3.0** | **2026-01** | **Універсальний SOP, один файл** |
 
 ---
 
-## Підтримка
+**Цей документ — універсальний стандарт.**
 
-**GitHub:** https://github.com/RomanPachkovskyi/bsahlen.de
-**Issues:** https://github.com/RomanPachkovskyi/bsahlen.de/issues
+Скопіюй `SOP.md` в новий проект → ШІ прочитає → зрозуміє як працювати.
 
-**Документація:**
-- Прочитай модулі в `docs/sop/`
-- Використай checklist з `docs/migration/`
-- Подивись приклади в PROJECT.md
-
----
-
-**Версія:** 2.1 (Modular)
-**Останнє оновлення:** 2026-01-28
-**Next:** Прочитай [basics.md](docs/sop/basics.md) або [migration.md](docs/sop/migration.md)
+Заміни плейсхолдери:
+- `[project-name]` — назва проекту
+- `[domain]` — домен (example.com)
+- `[port]` — Docker порт (8080)
+- `[user]` — GitHub username

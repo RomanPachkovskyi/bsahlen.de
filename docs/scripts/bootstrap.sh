@@ -2,7 +2,19 @@
 set -euo pipefail
 
 # =============================================================================
-# STUDIO STARTER: Bootstrap for WordPress + Maintenance (Single Monorepo)
+# STUDIO STARTER: Bootstrap for WordPress + Maintenance (SOP v3.0)
+# =============================================================================
+#
+# Usage:
+#   chmod +x bootstrap.sh
+#   ./bootstrap.sh
+#
+# This script creates a new WordPress project with:
+# - Router (maintenance/live modes)
+# - Docker environment
+# - SOP v3.0 documentation structure
+# - Git-ready structure
+#
 # =============================================================================
 
 RED='\033[0;31m'
@@ -28,33 +40,29 @@ ask() {
   printf -v "$var" "%s" "$val"
 }
 
-now() { date +"%Y-%m-%d %H:%M"; }
+now() { date +"%Y-%m-%d"; }
 
 echo ""
 echo "=============================================="
 echo "  STUDIO STARTER: WordPress + Maintenance"
-echo "  Single Monorepo Strategy"
+echo "  SOP v3.0 — Monorepo Strategy"
 echo "=============================================="
 echo ""
 
 # ---------- Check Docker ----------
 check_docker() {
     log_info "Checking Docker..."
-    
-    # Check if Docker is installed
+
     if ! command -v docker &> /dev/null; then
         log_error "Docker is not installed!"
         echo "Please install Docker Desktop: https://www.docker.com/products/docker-desktop"
         exit 1
     fi
-    
-    # Check if Docker daemon is running
+
     if ! docker info &> /dev/null; then
         log_warn "Docker is not running. Attempting to start..."
-        
-        # Try to start Docker (works on Mac/Linux with Docker Desktop)
+
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            # macOS
             open -a Docker
             echo "Waiting for Docker to start (max 60 seconds)..."
             for i in {1..60}; do
@@ -69,7 +77,6 @@ check_docker() {
             log_error "Docker failed to start. Please start Docker Desktop manually."
             exit 1
         elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            # Linux - try systemctl
             if command -v systemctl &> /dev/null; then
                 sudo systemctl start docker 2>/dev/null || true
                 sleep 3
@@ -81,12 +88,11 @@ check_docker() {
             log_error "Please start Docker manually: sudo systemctl start docker"
             exit 1
         else
-            # Windows or other
             log_error "Please start Docker Desktop manually."
             exit 1
         fi
     fi
-    
+
     log_ok "Docker is running"
 }
 
@@ -96,47 +102,41 @@ check_docker
 ask PROJECT "Project short name (lowercase, no spaces)" "myproject"
 ask PROD_DOMAIN "Production domain (without https://)" "example.de"
 ask LOCAL_PORT "Local Docker port" "8080"
+ask GITHUB_USER "GitHub username" "username"
 
 PROJECT_DIR="${PROJECT}"
 LOCAL_URL="http://localhost:${LOCAL_PORT}"
 PROD_URL="https://${PROD_DOMAIN}"
+PMA_PORT=$((LOCAL_PORT + 1))
 
 echo ""
 log_info "Creating project: ${PROJECT_DIR}"
 log_info "Production: ${PROD_URL}"
 log_info "Local: ${LOCAL_URL}"
+log_info "GitHub: https://github.com/${GITHUB_USER}/${PROJECT_DIR}"
 echo ""
 
 # ---------- Create folder structure ----------
 mkdir -p "${PROJECT_DIR}"
 cd "${PROJECT_DIR}"
 
-# Root structure
+# SOP v3.0 structure
 mkdir -p wp/wp-content/themes
 mkdir -p wp/wp-content/mu-plugins
 mkdir -p wp/wp-content/plugins
 mkdir -p maintenance
-mkdir -p _db
+mkdir -p backups
+mkdir -p docs
 
 log_ok "Folder structure created"
 
 # ---------- .gitignore ----------
 cat > .gitignore << 'GITIGNORE'
 # =============================================================================
-# Studio Standard .gitignore (Monorepo: WP + Maintenance)
+# Studio Standard .gitignore (SOP v3.0)
 # =============================================================================
 
-# ----- WordPress uploads & generated -----
-wp/wp-content/uploads/
-wp/wp-content/cache/
-wp/wp-content/upgrade/
-wp/wp-content/backups/
-wp/wp-content/ai1wm-backups/
-wp/wp-content/wflogs/
-wp/wp-content/et-cache/
-wp/wp-content/updraft/
-
-# ----- WordPress core (installed via Docker/Plesk, not Git) -----
+# ----- WordPress Core (installed via Docker/Plesk, NOT Git) -----
 wp/wp-admin/
 wp/wp-includes/
 wp/wp-*.php
@@ -146,39 +146,60 @@ wp/license.txt
 wp/readme.html
 !wp/wp-content/
 
-# ----- Config files (environment-specific) -----
+# ----- Uploads & Generated -----
+wp/wp-content/uploads/
+wp/wp-content/cache/
+wp/wp-content/upgrade/
+wp/wp-content/backups/
+wp/wp-content/wflogs/
+wp/wp-content/et-cache/
+wp/wp-content/updraft/
+wp/wp-content/ai1wm-backups/
+
+# ----- Languages (auto-downloaded by WordPress) -----
+wp/wp-content/languages/
+
+# ----- Config (environment-specific) -----
 wp/wp-config.php
 wp/.htaccess
 
-# ----- Database -----
-_db/
+# ----- 3rd Party Plugins (install via WP Admin, NOT Git) -----
+# Add your 3rd party plugins here:
+# wp/wp-content/plugins/elementor/
+# wp/wp-content/plugins/elementor-pro/
+# wp/wp-content/plugins/wordpress-seo/
+# etc.
+
+# ----- Keep custom plugins (custom-* pattern) -----
+# Example: wp/wp-content/plugins/custom-myplugin/ - WILL be in Git
+
+# ----- Redis drop-in -----
+wp/wp-content/object-cache.php
+
+# ----- Database & Backups -----
+backups/*.sql
+backups/*.sql.gz
 *.sql
 *.sql.gz
-
-# ----- Maintenance: React/Node -----
-maintenance/node_modules/
-maintenance/.next/
-maintenance/out/
-
-# ----- Build artifacts (keep only final build in Git if needed) -----
-# Uncomment if you commit built maintenance:
-# !maintenance/build/
-
-# ----- Logs & temp -----
-*.log
-.DS_Store
-Thumbs.db
 
 # ----- Secrets -----
 .env
 .env.*
 !.env.example
 
+# ----- Logs & Temp -----
+*.log
+.DS_Store
+Thumbs.db
+
 # ----- IDE -----
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# ----- Archive (historical files) -----
+docs/archive/
 GITIGNORE
 
 log_ok ".gitignore created"
@@ -187,13 +208,13 @@ log_ok ".gitignore created"
 cat > index.php << 'ROUTER_PHP'
 <?php
 /**
- * Router: Maintenance ↔ Live WordPress
- * 
- * MODE = 'maintenance' → Public sees /maintenance, admin sees WP
- * MODE = 'live'        → Public sees WP
- * 
+ * Router: Maintenance <-> Live WordPress
+ *
+ * MODE = 'maintenance' -> Public sees /maintenance, admin sees WP
+ * MODE = 'live'        -> Public sees WP
+ *
  * IMPORTANT: This file IS under Git control.
- * To switch modes: change MODE value, commit, push → Plesk deploys automatically.
+ * To switch modes: change MODE value, commit, push -> Plesk deploys.
  */
 
 define('MODE', 'maintenance'); // 'maintenance' | 'live'
@@ -223,7 +244,7 @@ function serve_wordpress(string $wpIndex): void {
         http_response_code(500);
         die('WordPress not installed. Missing: ' . $wpIndex);
     }
-    
+
     // Change to WP directory for correct paths
     chdir(dirname($wpIndex));
     require $wpIndex;
@@ -239,7 +260,7 @@ function serve_maintenance(string $maintIndex): void {
         header('Retry-After: 3600');
         die('Site under maintenance.');
     }
-    
+
     // HTTP 200 for SEO (Landing mode, not "site down")
     http_response_code(200);
     header('Content-Type: text/html; charset=utf-8');
@@ -257,18 +278,18 @@ if (preg_match('#^/wp(/|$)#', $requestUri)) {
     serve_wordpress($wpIndex);
 }
 
-// MODE: live → everyone sees WordPress
+// MODE: live -> everyone sees WordPress
 if (MODE === 'live') {
     serve_wordpress($wpIndex);
 }
 
 // MODE: maintenance
-// Admin (logged in) → WordPress
+// Admin (logged in) -> WordPress
 if (is_wp_admin_logged_in()) {
     serve_wordpress($wpIndex);
 }
 
-// Public → maintenance page
+// Public -> maintenance page
 serve_maintenance($maintIndex);
 ROUTER_PHP
 
@@ -277,7 +298,7 @@ log_ok "Router index.php created"
 # ---------- Router: .htaccess ----------
 cat > .htaccess << 'HTACCESS'
 # =============================================================================
-# Studio Standard .htaccess (Monorepo Router)
+# Studio Standard .htaccess (SOP v3.0 Router)
 # =============================================================================
 
 RewriteEngine On
@@ -288,12 +309,11 @@ RewriteEngine On
 # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # ----- Serve existing files/directories directly -----
-# Static assets in /maintenance and /wp are served as-is
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# ----- Everything else → Router -----
+# ----- Everything else -> Router -----
 RewriteRule ^ index.php [L]
 HTACCESS
 
@@ -301,8 +321,6 @@ log_ok ".htaccess created"
 
 # ---------- Docker Compose ----------
 cat > docker-compose.yml << DOCKER
-version: '3.8'
-
 services:
   wordpress:
     image: wordpress:latest
@@ -311,14 +329,11 @@ services:
       - "${LOCAL_PORT}:80"
     environment:
       WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
-      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: ${PROJECT}
     volumes:
-      # Mount entire wp folder for development
-      - ./wp/wp-content:/var/www/html/wp-content
-      # WordPress config
-      - ./wp-config-local.php:/var/www/html/wp-config.php:ro
+      - ./wp:/var/www/html:cached
     depends_on:
       - db
     restart: unless-stopped
@@ -327,26 +342,23 @@ services:
     image: mysql:8.0
     container_name: ${PROJECT}-db
     environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ${PROJECT}
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
     volumes:
       - db_data:/var/lib/mysql
-      # Import folder for DB dumps
-      - ./_db:/docker-entrypoint-initdb.d:ro
     restart: unless-stopped
 
-  # Optional: phpMyAdmin for DB management
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: ${PROJECT}-pma
     ports:
-      - "$((LOCAL_PORT + 1)):80"
+      - "${PMA_PORT}:80"
     environment:
       PMA_HOST: db
-      PMA_USER: wordpress
-      PMA_PASSWORD: wordpress
+      PMA_USER: wp
+      PMA_PASSWORD: wp
     depends_on:
       - db
     restart: unless-stopped
@@ -355,19 +367,19 @@ volumes:
   db_data:
 DOCKER
 
-log_ok "docker-compose.yml created (port: ${LOCAL_PORT}, phpMyAdmin: $((LOCAL_PORT + 1)))"
+log_ok "docker-compose.yml created (WP: ${LOCAL_PORT}, phpMyAdmin: ${PMA_PORT})"
 
 # ---------- wp-config-local.php ----------
-cat > wp-config-local.php << 'WPCONFIGLOCAL'
+cat > wp-config-local.php << WPCONFIGLOCAL
 <?php
 /**
  * WordPress Config: LOCAL (Docker)
  * This file is NOT deployed to production.
  */
 
-define('DB_NAME',     'wordpress');
-define('DB_USER',     'wordpress');
-define('DB_PASSWORD', 'wordpress');
+define('DB_NAME',     '${PROJECT}');
+define('DB_USER',     'wp');
+define('DB_PASSWORD', 'wp');
 define('DB_HOST',     'db');  // Docker service name
 define('DB_CHARSET',  'utf8mb4');
 define('DB_COLLATE',  '');
@@ -382,15 +394,15 @@ define('SECURE_AUTH_SALT', 'local-dev-key-change-me-6');
 define('LOGGED_IN_SALT',   'local-dev-key-change-me-7');
 define('NONCE_SALT',       'local-dev-key-change-me-8');
 
-$table_prefix = 'wp_';
+\$table_prefix = 'wp_';
 
 define('WP_DEBUG',     true);
 define('WP_DEBUG_LOG', true);
 define('SCRIPT_DEBUG', true);
 
 // Local URL
-define('WP_HOME',    'http://localhost:8080');
-define('WP_SITEURL', 'http://localhost:8080');
+define('WP_HOME',    '${LOCAL_URL}');
+define('WP_SITEURL', '${LOCAL_URL}');
 
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__ . '/');
@@ -399,17 +411,14 @@ if (!defined('ABSPATH')) {
 require_once ABSPATH . 'wp-settings.php';
 WPCONFIGLOCAL
 
-# Update port in wp-config
-sed -i "s|localhost:8080|localhost:${LOCAL_PORT}|g" wp-config-local.php
-
 log_ok "wp-config-local.php created"
 
-# ---------- wp-config-production.php (template) ----------
+# ---------- wp-config-production.php ----------
 cat > wp-config-production.php << WPCONFIGPROD
 <?php
 /**
  * WordPress Config: PRODUCTION
- * 
+ *
  * INSTRUCTIONS:
  * 1. Copy this file to hosting: /httpdocs/wp/wp-config.php
  * 2. Update DB credentials from Plesk
@@ -449,7 +458,601 @@ if (!defined('ABSPATH')) {
 require_once ABSPATH . 'wp-settings.php';
 WPCONFIGPROD
 
-log_ok "wp-config-production.php created (template)"
+log_ok "wp-config-production.php created"
+
+# ---------- README.md (Entry Point for AI) ----------
+cat > README.md << 'READMEMD'
+# AI Instructions
+
+> **Entry point for AI (Claude, Cursor, Copilot, etc.)**
+
+---
+
+## Read in this order
+
+1. **`SOP.md`** — Standard operating procedure (Git, Docker, Deploy, rules)
+2. **`PROJECT.md`** — Project knowledge base (status, tech stack, changelog)
+
+---
+
+## Project Structure
+
+```
+[project]/
+├── README.md          <- You are here (entry point)
+├── SOP.md             <- Standard operating procedure
+├── PROJECT.md         <- Project knowledge base
+├── SERVER_RULES.md    <- Hosting rules (deploy, modes)
+├── index.php          <- Router
+├── wp/                <- WordPress
+├── maintenance/       <- Landing page
+├── docker-compose.yml <- Docker config
+└── docs/              <- Additional documentation
+```
+
+---
+
+## Quick Start
+
+```bash
+# Check Docker
+docker ps
+
+# Start
+cd ~/Project/[project-name]
+docker-compose up -d
+
+# Open
+open http://localhost:[port]
+```
+
+---
+
+## AI Obligations
+
+1. Read `SOP.md` and `PROJECT.md` before working
+2. Maintain `PROJECT.md` (changelog, tech stack, open questions)
+3. Code comments — English only
+4. Prepare detailed commit messages
+
+---
+
+## AI Restrictions
+
+- `git push`, `git merge`, `git rebase` (owner only!)
+- Critical actions without confirmation
+- Production changes without testing
+
+---
+
+## STOP-RULE
+
+**Stop and ask if:**
+- Instruction is unclear
+- Action may affect production
+- Need push or critical change
+
+---
+
+**Next:** Read `SOP.md` -> `PROJECT.md`
+READMEMD
+
+log_ok "README.md created (AI entry point)"
+
+# ---------- SOP.md (Full v3.0) ----------
+cat > SOP.md << 'SOPMD'
+# SOP: WordPress + Git + Plesk
+
+**Studio Standard Operating Procedure (v3.0)**
+
+> This document is a universal standard. Copy to any WordPress project — AI will understand how to work.
+
+---
+
+## 0. Foundation
+
+**Key condition:** Only the project owner has access to the site admin panel. Clients and third parties have no access.
+
+This allows controlled bidirectional DB synchronization when needed.
+
+---
+
+## 1. Philosophy
+
+| What | Where | Priority |
+|------|-------|----------|
+| **Code** | GitHub | Single source of truth |
+| **Content / SEO / Media** | Production | Final data |
+| **Development** | Local environment | 90% of work |
+
+> Local != production copy. Local = workshop.
+
+---
+
+## 2. Project Structure (Monorepo)
+
+```
+[project-name]/
+├── index.php                 <- Router (MODE switching) ✅ Git
+├── .htaccess                 <- Routing rules ✅ Git
+├── wp/                       <- WordPress
+│   ├── wp-content/
+│   │   ├── themes/           <- ✅ Git (all themes)
+│   │   ├── mu-plugins/       <- ✅ Git
+│   │   ├── plugins/custom-*  <- ✅ Git (custom only)
+│   │   ├── plugins/[others]  <- ❌ NOT Git (install via WP Admin)
+│   │   ├── uploads/          <- ❌ NOT Git
+│   │   └── languages/        <- ❌ NOT Git (auto-downloaded)
+│   ├── wp-admin/             <- ❌ NOT Git (WP Core)
+│   ├── wp-includes/          <- ❌ NOT Git (WP Core)
+│   └── wp-config.php         <- ❌ NOT Git (env-specific)
+├── maintenance/              <- Landing page ✅ Git
+│   └── index.html
+├── backups/                  <- DB dumps ❌ NOT Git
+├── docs/                     <- Documentation ✅ Git
+│   └── archive/              <- Historical files ❌ NOT Git
+├── docker-compose.yml        <- ✅ Git
+├── wp-config-local.php       <- ✅ Git (template)
+├── wp-config-production.php  <- ✅ Git (template)
+├── SOP.md                    <- ✅ Git (this file)
+├── README.md                 <- ✅ Git (entry point for AI)
+├── PROJECT.md                <- ✅ Git (knowledge base, AI maintains)
+└── SERVER_RULES.md           <- ✅ Git (hosting rules)
+```
+
+---
+
+## 3. Git — Rules
+
+### 3.1 What goes in Git
+
+**✅ Stored:**
+- Router: `index.php`, `.htaccess`
+- Themes: `wp/wp-content/themes/*` (all, including parent)
+- MU-plugins: `wp/wp-content/mu-plugins/*`
+- Custom plugins: `wp/wp-content/plugins/custom-*`
+- Maintenance: `maintenance/*`
+- Docker: `docker-compose.yml`, `php.ini`
+- Config templates: `wp-config-local.php`, `wp-config-production.php`
+- Documentation: `SOP.md`, `README.md`, `PROJECT.md`, `SERVER_RULES.md`
+
+**❌ NOT stored:**
+- Uploads: `wp/wp-content/uploads/`
+- Languages: `wp/wp-content/languages/`
+- WP Core: `wp/wp-admin/`, `wp/wp-includes/`
+- Active config: `wp/wp-config.php`
+- Secrets: `.env`, `.env.*`
+- Backups: `backups/`, `*.sql`
+- 3rd party plugins: `wp/wp-content/plugins/[plugin-name]/`
+
+### 3.2 Plugin rules
+
+**✅ In Git:**
+- `custom-*` — any custom plugins
+- Plugins created by studio from scratch
+- Private plugins (not in WP repo)
+
+**❌ NOT in Git:**
+- Public plugins from wordpress.org
+- Premium plugins (Elementor Pro, ACF Pro, etc.)
+- Any plugins installable via WP Admin
+
+### 3.3 Access
+
+| Role | Allowed |
+|------|---------|
+| **Owner** | Commit, Push, Merge (via GitHub Desktop) |
+| **AI** | Edit files locally, prepare commit messages |
+
+> AI **CANNOT** execute `git push`, `git merge`, `git rebase`.
+
+### 3.4 Branches
+
+- `main` — single production branch, Plesk pulls it
+- `feature/*` — optional, for large changes
+- `dev` — **NOT used**
+
+---
+
+## 4. Local Environment (Docker)
+
+### 4.1 Standard Configuration
+
+```yaml
+# docker-compose.yml
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "[port]:80"
+    volumes:
+      - ./wp:/var/www/html:cached
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: [project-name]
+
+  db:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: [project-name]
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "[port+1]:80"
+```
+
+### 4.2 Commands
+
+```bash
+cd ~/Project/[project-name]
+
+# Start
+docker-compose up -d
+
+# Stop
+docker-compose down
+
+# Logs
+docker-compose logs -f wordpress
+
+# DB Backup
+docker-compose exec -T db mysqldump -u wp -pwp [project-name] > backups/backup_$(date +%Y%m%d_%H%M%S).sql
+```
+
+### 4.3 Local URLs
+
+| Service | URL |
+|---------|-----|
+| WordPress | `http://localhost:[port]` |
+| WP Admin | `http://localhost:[port]/wp-admin` |
+| phpMyAdmin | `http://localhost:[port+1]` |
+
+---
+
+## 5. Deploy
+
+### 5.1 Chain
+
+```
+Local -> GitHub (main) -> Plesk manual pull -> Production
+```
+
+**Deployed from Git:**
+- Router (`index.php`, `.htaccess`)
+- Themes, mu-plugins, custom plugins
+- Maintenance page
+- Config templates, documentation
+
+**NOT deployed from Git:**
+- WordPress Core (installed via Plesk)
+- Uploads (stay on hosting)
+- `wp-config.php` (created manually on hosting)
+- 3rd party plugins (installed via WP Admin)
+
+### 5.2 Plesk Git Setup
+
+**Step 1:** Plesk -> Domains -> [domain] -> Git
+
+**Step 2:** Repository settings:
+- URL: `https://github.com/[user]/[project-name].git`
+- Branch: `main`
+- Deploy to: `/httpdocs`
+- **Mode: MANUAL** (always Manual first!)
+
+**Step 3:** SSH Keys (if private repo):
+1. Plesk -> Generate Key Pair
+2. Copy Public Key
+3. GitHub -> Settings -> Deploy keys -> Add
+4. Allow write access: **NO**
+
+**Step 4:** Test Pull (WITHOUT deploy):
+- Plesk -> Git -> "Pull Updates"
+- Check Output log
+
+**Step 5:** First Deploy:
+1. **Backup production!**
+2. Plesk -> Git -> "Deploy"
+3. Check site
+
+**Step 6:** After stable operation (1-2 days):
+- Mode: Manual -> Automatic (optional)
+
+### 5.3 Post-Deploy Checklist
+
+**After each deploy:**
+1. Check homepage
+2. Check key pages
+3. **Elementor: Regenerate CSS** (wp-admin -> Elementor -> Tools)
+4. Hard refresh browser (Ctrl+Shift+R)
+5. Check on mobile
+6. Check Console for JS errors
+
+---
+
+## 6. Mode Switching (Router)
+
+### 6.1 Two Modes
+
+**MODE = 'maintenance'**
+| Visitor | Sees |
+|---------|------|
+| Public | `/maintenance/index.html` |
+| Admin (logged in) | WordPress |
+| Direct `/wp/*` | WordPress |
+
+**MODE = 'live'**
+| Visitor | Sees |
+|---------|------|
+| Everyone | WordPress |
+
+### 6.2 How to Switch
+
+**Via Git (recommended):**
+1. Edit `index.php`:
+   ```php
+   define('MODE', 'live'); // or 'maintenance'
+   ```
+2. Commit + Push
+3. Plesk -> Deploy
+
+**On hosting (emergency):**
+- Plesk File Manager -> `/httpdocs/index.php` -> Edit
+- ⚠️ Will be overwritten on next deploy!
+
+### 6.3 Default MODE
+
+| Situation | MODE |
+|-----------|------|
+| New project (bootstrap) | `'maintenance'` |
+| Live site migration | `'live'` |
+| Development site migration | `'maintenance'` |
+
+---
+
+## 7. Database
+
+### 7.1 Key Rule
+
+**Any DB transfer = URL replacement.**
+
+| Direction | Replacement |
+|-----------|-------------|
+| Production -> Local | `https://[domain]` -> `http://localhost:[port]` |
+| Local -> Production | `http://localhost:[port]` -> `https://[domain]` |
+
+### 7.2 URL Replacement
+
+**WP-CLI (recommended):**
+```bash
+docker-compose run --rm wpcli search-replace \
+  'http://localhost:[port]' 'https://[domain]' \
+  --skip-columns=guid --all-tables \
+  --export=/backups/production.sql
+```
+
+**Better Search Replace (plugin):**
+1. WP Admin -> Tools -> Better Search Replace
+2. Search: `http://localhost:[port]`
+3. Replace: `https://[domain]`
+4. Dry run first!
+
+### 7.3 Backup
+
+**Before any DB operations:**
+```bash
+# Local
+docker-compose exec -T db mysqldump -u wp -pwp [db-name] > backups/backup_$(date +%Y%m%d).sql
+
+# Production
+# Plesk -> Databases -> Export
+# or phpMyAdmin -> Export
+```
+
+---
+
+## 8. Migration of Existing Projects
+
+### 8.1 Signs of Old Project
+
+- `wordpress/` folder instead of `wp/`
+- No router files in root
+- No `maintenance/` folder
+- Git contains uploads/, languages/, 3rd party plugins
+- Paths `~/GitHub/` instead of `~/Project/`
+
+### 8.2 Migration Process (10 phases)
+
+```
+Phase 0: Backup & Documentation     <- Mandatory!
+Phase 1: Create New Files           <- Router, templates, docs
+Phase 2: Git Cleanup                <- Remove languages, plugins
+Phase 3: Structure Migration        <- wordpress/ -> wp/
+Phase 4: Docker Update              <- Update paths
+Phase 5: Local Testing              <- Verify everything works
+Phase 6: Git Finalization           <- Commit, push
+Phase 7: Plesk Setup                <- Git deploy (MANUAL)
+Phase 8: Production Deploy          <- Critical phase!
+Phase 9: Validation                 <- Monitoring 24-48h
+```
+
+**Detailed instructions:** see `docs/MIGRATION.md`
+
+---
+
+## 9. Project Documentation
+
+### 9.1 AI Creates These Files
+
+**PROJECT.md** — project knowledge base:
+- Snapshot (environments, status)
+- Project State (BUILD/LANDING/LIVE)
+- Tech Stack
+- Changelog
+- DB Sync Notes
+- Open Questions
+
+**SERVER_RULES.md** — hosting rules:
+- Hosting Structure
+- Server Info (IP, PHP, DB)
+- Access (FTP, SSH, Plesk)
+- Modes
+- Go-Live Checklist
+- Rollback Checklist
+
+### 9.2 AI Updates Documentation
+
+**When to update PROJECT.md:**
+- After adding new services (Redis, CDN, etc.)
+- After structural changes
+- After every important change -> Changelog
+- If something unclear -> Open Questions
+
+---
+
+## 10. AI Rules
+
+### 10.1 AI Obligations
+
+1. **Read before working:** `README.md` -> `SOP.md` -> `PROJECT.md`
+2. **Maintain PROJECT.md:** update Changelog, Tech Stack, Open Questions
+3. **Code comments:** English only
+4. **Prepare commit messages:** detailed, with change descriptions
+
+### 10.2 AI Restrictions
+
+- `git push`, `git merge`, `git rebase`
+- Critical actions without owner confirmation
+- Adding forbidden files to Git
+- Making changes without documentation
+
+### 10.3 STOP-RULE
+
+**Stop and ask owner if:**
+- Instruction is unclear or ambiguous
+- Missing data for execution
+- Action may affect production
+- Need Git push
+- Critical change (DB import, MODE change, wp-config.php)
+
+### 10.4 Critical Actions (confirmation only)
+
+- DB import to production
+- MODE change to `'live'` (Go-Live)
+- Changes to `wp-config.php` on hosting
+- Force push
+- Production file deletion
+
+---
+
+## 11. Troubleshooting
+
+### White screen after deploy
+
+1. Check `wp/wp-config.php` paths
+2. Enable debug: `define('WP_DEBUG', true);`
+3. Check `wp/wp-content/debug.log`
+
+### Broken styles
+
+1. **Elementor:** wp-admin -> Elementor -> Tools -> Regenerate CSS
+2. Hard refresh: Ctrl+Shift+R
+3. Clear browser cache
+
+### Docker volume issues
+
+1. `docker volume ls`
+2. `docker-compose down && docker-compose up -d`
+3. Restore DB from `backups/`
+
+### 404 after deploy
+
+1. Check `.htaccess` in `/httpdocs`
+2. Check `WP_SITEURL` in `wp-config.php`
+3. Plesk -> Apache settings
+
+---
+
+## 12. Quick Reference
+
+### Session Start
+
+```bash
+# 1. Check Docker
+docker ps
+
+# 2. Start if needed
+cd ~/Project/[project-name] && docker-compose up -d
+
+# 3. Open site
+open http://localhost:[port]
+```
+
+### Commit Workflow
+
+```bash
+# 1. Check changes
+git status
+git diff
+
+# 2. Stage
+git add [files]
+
+# 3. Commit (AI prepares, owner executes)
+git commit -m "type: description
+
+Details of what changed
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# 4. Push (owner only!)
+git push origin main
+```
+
+### Deploy Workflow
+
+```bash
+# 1. Local testing complete
+# 2. Owner pushes to GitHub
+# 3. Plesk -> Git -> Pull Updates
+# 4. Plesk -> Git -> Deploy (MANUAL)
+# 5. Check production site
+# 6. Elementor -> Regenerate CSS
+# 7. Update PROJECT.md
+```
+
+---
+
+## Version
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.x | — | 2 repositories |
+| 2.0 | 2025-01 | Monorepo, router in Git |
+| 2.1 | 2026-01 | Modular structure |
+| **3.0** | **2026-01** | **Universal SOP, single file** |
+
+---
+
+**This document is a universal standard.**
+
+Copy `SOP.md` to a new project -> AI reads it -> understands how to work.
+
+Replace placeholders:
+- `[project-name]` — project name
+- `[domain]` — domain (example.com)
+- `[port]` — Docker port (8080)
+- `[user]` — GitHub username
+SOPMD
+
+log_ok "SOP.md created (v3.0 full)"
 
 # ---------- PROJECT.md ----------
 cat > PROJECT.md << PROJECTMD
@@ -459,8 +1062,10 @@ cat > PROJECT.md << PROJECTMD
 
 | Environment | URL | Status |
 |-------------|-----|--------|
-| Production  | ${PROD_URL} | 🔴 Not deployed |
-| Local       | ${LOCAL_URL} | 🟡 Ready to start |
+| Production | ${PROD_URL} | 🔴 Not deployed |
+| Local | ${LOCAL_URL} | 🟡 Ready to start |
+
+---
 
 ## Project State
 
@@ -470,29 +1075,77 @@ cat > PROJECT.md << PROJECTMD
 - [ ] LANDING — maintenance page live, WP in development
 - [ ] LIVE — WordPress public
 
-## Goals
+---
 
-- **What we build:** 
-- **Target audience:** 
-- **Key pages:** 
+## About
+
+**Website:** [Description]
+**Client:** [Client name]
+**Language:** [DE/EN/etc.]
+
+---
 
 ## Tech Stack
 
-- WordPress (latest)
-- Theme: TBD
-- Key plugins: TBD
-- Maintenance: React/HTML (TBD)
+- **WordPress:** Latest (via Docker/Plesk)
+- **PHP:** 8.x
+- **Database:** MySQL 8.0 (local) / MariaDB (production)
+- **Theme:** TBD
+- **Page Builder:** TBD
+- **Key Plugins:** TBD
 
-## Open Questions (blockers)
+---
 
-1. 
-2. 
+## URLs
+
+| Environment | URL | Port |
+|-------------|-----|------|
+| Local Site | ${LOCAL_URL} | ${LOCAL_PORT} |
+| Local Admin | ${LOCAL_URL}/wp-admin | ${LOCAL_PORT} |
+| phpMyAdmin | http://localhost:${PMA_PORT} | ${PMA_PORT} |
+| Production | ${PROD_URL} | — |
+
+---
+
+## Database
+
+**Local (Docker):**
+- Host: \`db\`
+- Database: \`${PROJECT}\`
+- User: \`wp\`
+- Password: \`wp\`
+- Prefix: \`wp_\`
+
+**Production:** See Plesk panel
+
+---
+
+## Hosting
+
+**Provider:** TBD
+**Domain:** ${PROD_DOMAIN}
+**SSL:** TBD
+
+**Access:**
+- FTP/FTPS: TBD
+- SSH: TBD
+- Plesk Panel: TBD
+
+**Deploy:**
+- Method: Plesk Git (MANUAL mode)
+- Repository: https://github.com/${GITHUB_USER}/${PROJECT}
+- Branch: main
+- Deploy to: /httpdocs
+
+---
 
 ## Changelog
 
 | Date | Change | By |
 |------|--------|----|
-| $(now) | Bootstrap created | AI |
+| $(now) | Bootstrap project created (SOP v3.0) | AI |
+
+---
 
 ## DB Sync Notes
 
@@ -500,160 +1153,141 @@ cat > PROJECT.md << PROJECTMD
 |------|-----------|--------|-------|
 | — | — | — | No sync yet |
 
-## Deploy Notes
+---
 
-**Goes to Git:**
-- \`/wp/wp-content/themes/*\`
-- \`/wp/wp-content/mu-plugins/*\`
-- \`/wp/wp-content/plugins/custom-*\`
-- \`/maintenance/*\` (build)
-- \`/index.php\` (router)
-- \`/.htaccess\`
+## Open Questions
 
-**Never in Git:**
-- \`/wp/wp-content/uploads/\`
-- \`/wp/wp-config.php\`
-- \`/_db/\`
-- Database dumps
+1. Theme selection?
+2. Required plugins?
+3. Hosting provider details?
+
+---
+
+## Special Notes
+
+*No special notes yet.*
 PROJECTMD
 
 log_ok "PROJECT.md created"
 
 # ---------- SERVER_RULES.md ----------
-cat > SERVER_RULES.md << 'SERVERRULES'
-# SERVER_RULES: Maintenance ↔ WordPress
+cat > SERVER_RULES.md << SERVERRULES
+# SERVER_RULES: ${PROJECT}
 
-## Hosting Structure (Plesk)
+## Hosting Structure
 
-```
-/httpdocs/                    ← Git deploys HERE (root)
-├── index.php                 ← Router (from Git)
-├── .htaccess                 ← Routing rules (from Git)
-├── wp/                       ← WordPress
-│   ├── wp-admin/             ← WP Core (from Plesk installer)
-│   ├── wp-includes/          ← WP Core (from Plesk installer)
+\`\`\`
+/httpdocs/                    <- Document root (Plesk)
+├── index.php                 <- Router (MODE switching)
+├── .htaccess                 <- Routing rules
+├── wp/                       <- WordPress installation
+│   ├── wp-admin/
+│   ├── wp-includes/
 │   ├── wp-content/
-│   │   ├── themes/           ← From Git
-│   │   ├── mu-plugins/       ← From Git
-│   │   ├── plugins/          ← Installed via WP Admin
-│   │   └── uploads/          ← Media (NOT in Git)
-│   ├── wp-config.php         ← Created manually on hosting
-│   └── index.php             ← WP Core
-└── maintenance/              ← From Git
-    └── index.html            ← Landing page
-```
+│   │   ├── themes/
+│   │   ├── plugins/
+│   │   └── uploads/
+│   └── wp-config.php         <- Production config
+└── maintenance/
+    └── index.html            <- Maintenance page
+\`\`\`
+
+---
+
+## Server Info
+
+| Parameter | Value |
+|-----------|-------|
+| **Provider** | TBD |
+| **IP** | TBD |
+| **Domain** | ${PROD_DOMAIN} |
+| **SSL** | TBD |
+| **PHP** | 8.x |
+| **Database** | TBD |
+
+---
+
+## Access
+
+| Method | Status | Notes |
+|--------|--------|-------|
+| **FTP/FTPS** | TBD | |
+| **SSH** | TBD | |
+| **Plesk Panel** | TBD | |
+| **phpMyAdmin** | TBD | |
+
+---
+
+## Git Deploy
+
+| Setting | Value |
+|---------|-------|
+| **Repository** | https://github.com/${GITHUB_USER}/${PROJECT} |
+| **Branch** | main |
+| **Deploy to** | /httpdocs |
+| **Mode** | MANUAL |
+
+**Deploy workflow:**
+1. Owner pushes to GitHub (main branch)
+2. Plesk -> Git -> Pull Updates
+3. Plesk -> Git -> Deploy
+4. Verify site
+5. Elementor -> Regenerate CSS (if needed)
+
+---
 
 ## Modes
 
-### MODE = 'maintenance' (default for new projects)
+### MODE = 'maintenance' (default)
 
 | Visitor | Sees |
 |---------|------|
-| Public | `/maintenance/index.html` |
+| Public | \`/maintenance/index.html\` |
 | Admin (logged in) | WordPress |
-| Direct `/wp/*` requests | WordPress |
-
-**Use case:** Site under development, but landing page is public and indexed.
+| Direct \`/wp/*\` | WordPress |
 
 ### MODE = 'live'
 
 | Visitor | Sees |
 |---------|------|
-| Everyone | WordPress |
+| Everyone | WordPress site |
 
-**Use case:** Site launched, WordPress is public.
+**How to switch:**
+1. Edit \`index.php\` line 12: \`define('MODE', 'live');\`
+2. Commit + Push
+3. Plesk -> Deploy
 
-## How to Switch Modes
+---
 
-### Option A: Via Git (recommended)
+## Go-Live Checklist
 
-1. Edit `index.php` locally:
-   ```php
-   define('MODE', 'live'); // or 'maintenance'
-   ```
-2. Commit & Push
-3. Plesk auto-deploys → mode switched
+- [ ] Content ready
+- [ ] SEO configured
+- [ ] SSL active
+- [ ] MODE = 'live'
+- [ ] Tested on desktop
+- [ ] Tested on mobile
+- [ ] Elementor CSS regenerated
 
-### Option B: Direct on hosting (emergency only)
+---
 
-1. Plesk File Manager → `/httpdocs/index.php`
-2. Edit MODE value
-3. Save
+## Rollback Checklist
 
-⚠️ **Warning:** Direct edits will be overwritten on next Git deploy!
+**If something breaks after deploy:**
 
-## Checklist: Go Live
+1. [ ] Switch MODE = 'maintenance'
+2. [ ] Identify issue (check \`/wp/wp-content/debug.log\`)
+3. [ ] Git rollback if needed
+4. [ ] DB restore if needed
+5. [ ] Verify site works
+6. [ ] Switch MODE = 'live'
 
-- [ ] All content ready in WordPress
-- [ ] SEO configured (titles, descriptions, sitemap)
-- [ ] SSL certificate active
-- [ ] Change `MODE` to `'live'` in `index.php`
-- [ ] Commit & Push
-- [ ] Clear caches (WP + CDN if any)
-- [ ] Test public access
-- [ ] Update PROJECT.md state to LIVE
+---
 
-## Checklist: Enable Maintenance (rollback)
-
-- [ ] Change `MODE` to `'maintenance'` in `index.php`
-- [ ] Commit & Push
-- [ ] Verify public sees maintenance page
-- [ ] Verify admin can still access `/wp/wp-admin`
+**Last updated:** $(now)
 SERVERRULES
 
 log_ok "SERVER_RULES.md created"
-
-# ---------- SOP.md (short version for repo) ----------
-cat > SOP.md << 'SOPMD'
-# SOP: WordPress + Git + Plesk (Studio Standard)
-
-> Full SOP: see studio documentation. This is a quick reference.
-
-## Source of Truth
-
-| What | Where |
-|------|-------|
-| Code | GitHub |
-| Content/Media | Production |
-| Development | Local (90%) |
-
-## Git Rules
-
-- **Push/Merge:** Owner only (via GitHub Desktop)
-- **AI can:** Edit files locally, prepare commits
-- **AI cannot:** Push, merge, rebase
-
-## Never in Git
-
-- `wp-content/uploads/`
-- `wp-config.php`
-- Database dumps
-- Secrets, keys
-
-## Deploy Flow
-
-```
-Local → GitHub (main) → Plesk auto-pull → Production
-```
-
-## Mode Switching
-
-Edit `index.php`:
-```php
-define('MODE', 'maintenance'); // or 'live'
-```
-
-Commit → Push → Done.
-
-## AI Rules
-
-1. Follow SOP strictly
-2. Maintain PROJECT.md and SERVER_RULES.md
-3. Code comments: English only
-4. **STOP-RULE:** If unclear or risky → ask owner first
-SOPMD
-
-log_ok "SOP.md created"
 
 # ---------- Maintenance placeholder ----------
 cat > maintenance/index.html << 'MAINTHTML'
@@ -692,145 +1326,31 @@ MAINTHTML
 
 log_ok "maintenance/index.html placeholder created"
 
-# ---------- CLAUDE.md (AI instructions) ----------
-cat > CLAUDE.md << 'CLAUDEMD'
-# CLAUDE.md — AI Instructions
-
-## Project Type
-WordPress + Maintenance (Single Monorepo)
-
-## Key Files to Read First
-1. `PROJECT.md` — current state, domains, blockers
-2. `SERVER_RULES.md` — hosting structure, mode switching
-3. `SOP.md` — workflow rules
-
-## Structure
-
-```
-/
-├── index.php              ← Router (MODE switching)
-├── .htaccess              ← Routing rules
-├── wp/                    ← WordPress
-│   └── wp-content/
-│       ├── themes/        ← Edit here
-│       ├── mu-plugins/    ← Edit here
-│       └── plugins/       ← Custom only
-├── maintenance/           ← Landing page
-├── docker-compose.yml     ← Local environment
-├── wp-config-local.php    ← Local DB config
-└── wp-config-production.php ← Template for hosting
-```
-
-## Commands (Local)
-
-```bash
-# Start local environment
-docker compose up -d
-
-# Stop
-docker compose down
-
-# View logs
-docker compose logs -f wordpress
-
-# Access WP CLI (if needed)
-docker compose exec wordpress wp --info
-```
-
-## What I Can Do
-
-- Edit theme files in `/wp/wp-content/themes/`
-- Edit mu-plugins in `/wp/wp-content/mu-plugins/`
-- Edit maintenance page in `/maintenance/`
-- Update PROJECT.md, SERVER_RULES.md
-- Prepare commit messages
-- Change MODE in `index.php` (with owner confirmation)
-
-## What I Cannot Do
-
-- `git push`, `git merge`, `git rebase`
-- Edit `wp-config.php` on production
-- Import DB to production
-- Final Go-Live switch (need owner confirmation)
-
-## STOP-RULE
-
-If instruction is unclear, data is missing, or action affects production:
-**STOP and ASK owner first.**
-CLAUDEMD
-
-log_ok "CLAUDE.md created"
-
-# ---------- README.md ----------
-cat > README.md << READMEMD
-# ${PROJECT}
-
-WordPress project with maintenance mode support.
-
-## Quick Start (Local)
-
-\`\`\`bash
-# Start Docker
-docker compose up -d
-
-# Open in browser
-open ${LOCAL_URL}
-
-# phpMyAdmin
-open http://localhost:$((LOCAL_PORT + 1))
-\`\`\`
-
-## Project URLs
-
-| Environment | URL |
-|-------------|-----|
-| Local | ${LOCAL_URL} |
-| Production | ${PROD_URL} |
-
-## Documentation
-
-- \`PROJECT.md\` — project status, changelog
-- \`SERVER_RULES.md\` — hosting setup, mode switching
-- \`SOP.md\` — workflow rules
-- \`CLAUDE.md\` — AI instructions
-
-## Mode Switching
-
-Edit \`index.php\`:
-\`\`\`php
-define('MODE', 'maintenance'); // or 'live'
-\`\`\`
-
-Commit & push to deploy.
-READMEMD
-
-log_ok "README.md created"
-
 # ---------- Final output ----------
 echo ""
 echo "=============================================="
-echo -e "${GREEN}  ✓ PROJECT CREATED SUCCESSFULLY${NC}"
+echo -e "${GREEN}  PROJECT CREATED SUCCESSFULLY (SOP v3.0)${NC}"
 echo "=============================================="
 echo ""
 echo "Project folder: $(pwd)"
 echo ""
 
-# ---------- Ask to start Docker Compose ----------
+# ---------- Start Docker ----------
 read -r -p "Start Docker containers now? [Y/n]: " START_DOCKER
 START_DOCKER="${START_DOCKER:-Y}"
 
 if [[ "$START_DOCKER" =~ ^[Yy]$ ]]; then
     log_info "Starting Docker containers..."
-    
+
     if docker compose up -d; then
         log_ok "Containers started!"
         echo ""
         echo "=============================================="
-        echo -e "${GREEN}  🚀 LOCAL ENVIRONMENT READY${NC}"
+        echo -e "${GREEN}  LOCAL ENVIRONMENT READY${NC}"
         echo "=============================================="
         echo ""
         echo "  WordPress:  ${LOCAL_URL}"
-        echo "  phpMyAdmin: http://localhost:$((LOCAL_PORT + 1))"
+        echo "  phpMyAdmin: http://localhost:${PMA_PORT}"
         echo ""
         echo "  Note: WordPress needs ~30 seconds for first start."
         echo "  Then visit ${LOCAL_URL} to complete installation."
@@ -850,10 +1370,10 @@ else
     echo ""
 fi
 
-echo "2) Initialize Git (you do this):"
+echo "2) Initialize Git:"
 echo "   git init"
 echo "   git add ."
-echo "   git commit -m \"chore: bootstrap project\""
+echo "   git commit -m \"chore: bootstrap project (SOP v3.0)\""
 echo ""
 echo "3) Create GitHub repo and push:"
 echo "   gh repo create ${PROJECT} --private --source=. --push"
@@ -862,12 +1382,9 @@ echo ""
 echo "4) On hosting (Plesk):"
 echo "   a) Create domain/subdomain"
 echo "   b) Install WordPress via Plesk (creates DB)"
-echo "   c) Move WP to /httpdocs/wp/ subfolder"
-echo "   d) Copy wp-config-production.php → /httpdocs/wp/wp-config.php"
-echo "   e) Configure Git deployment → /httpdocs"
+echo "   c) Copy wp-config-production.php -> /httpdocs/wp/wp-config.php"
+echo "   d) Configure Git deployment -> /httpdocs (MANUAL mode)"
 echo ""
-echo "5) To switch modes:"
-echo "   Edit index.php → MODE='live' or MODE='maintenance'"
-echo "   Commit & Push"
+echo "5) AI reads: README.md -> SOP.md -> PROJECT.md"
 echo ""
 echo "=============================================="

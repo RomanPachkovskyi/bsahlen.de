@@ -1,51 +1,72 @@
-# bsahlen.de
+# AI Instructions
 
-WordPress corporate website for BSahlen Financial Consulting.
-
----
-
-## For AI Assistants
-
-**Start here:**
-1. Read `CLAUDE.md` — AI entry point (universal, auto-detect)
-2. Read `PROJECT.md` — Knowledge base (single source of truth)
-3. Read `SOP.md` — Workflow navigator
+> **Entry point для ШІ (Claude, Cursor, Copilot, etc.)**
 
 ---
 
-## Quick Start (Local)
+## Читай в такому порядку
 
-```bash
-cd ~/Project/bsahlen.de
-docker-compose up -d
-open http://localhost:8080
+1. **`SOP.md`** — стандарт роботи (Git, Docker, Deploy, правила)
+2. **`PROJECT.md`** — база знань цього проекту (статус, tech stack, changelog)
+
+---
+
+## Структура проекту
+
+```
+[project]/
+├── README.md          ← Ти тут (entry point)
+├── SOP.md             ← Стандарт роботи
+├── PROJECT.md         ← База знань проекту
+├── index.php          ← Router
+├── wp/                ← WordPress
+├── maintenance/       ← Landing page
+├── docker-compose.yml ← Docker config
+└── docs/              ← Додаткова документація
 ```
 
 ---
 
-## URLs
+## Quick Start
 
-| Environment | URL |
-|-------------|-----|
-| Local | http://localhost:8080 |
-| Production | https://bsahlen.de |
+```bash
+# Перевірити Docker
+docker ps
 
----
+# Запустити
+cd ~/Project/[project-name]
+docker-compose up -d
 
-## Documentation
-
-- **CLAUDE.md** — AI instructions
-- **PROJECT.md** — Project status, tech stack, changelog
-- **SOP.md** — Workflow (modular structure)
-- **SERVER_RULES.md** — Hosting rules
-- **docs/sop/** — Detailed modules (basics, deployment, migration, improvements)
+# Відкрити
+open http://localhost:[port]
+```
 
 ---
 
-## Repository
+## ШІ зобов'язаний
 
-**GitHub:** https://github.com/RomanPachkovskyi/bsahlen.de
+1. Читати `SOP.md` і `PROJECT.md` перед роботою
+2. Вести `PROJECT.md` (changelog, tech stack, open questions)
+3. Коментарі в коді — тільки англійською
+4. Готувати детальні commit messages
 
 ---
 
-**Last updated:** 2026-01-28
+## ШІ заборонено
+
+- `git push`, `git merge`, `git rebase` (тільки власник!)
+- Критичні дії без підтвердження
+- Зміни на production без тестування
+
+---
+
+## STOP-RULE
+
+**Зупинись і запитай якщо:**
+- Інструкція неясна
+- Дія може вплинути на production
+- Потрібен push або критична зміна
+
+---
+
+**Далі:** Читай `SOP.md` → `PROJECT.md`
