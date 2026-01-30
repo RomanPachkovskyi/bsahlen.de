@@ -71,6 +71,7 @@ logs/*
 /SOP.md
 /SERVER_RULES.md
 /docs/
+/logs/
 
 # ========================================
 # Development files (not for production)
@@ -91,7 +92,6 @@ wp/*.txt
 # AI & SEO context files in root (KEEP THESE)
 # These files are important for search engines and AI crawlers
 !/robots.txt
-!/bsahlen-ai.txt
 !/lIms.txt
 
 # ========================================
@@ -99,8 +99,3 @@ wp/*.txt
 # ========================================
 /wp-config-production.php
 
-# ========================================
-# Deployment helpers (not needed in git)
-# ========================================
-/.gitattributes
-/PLESK_DEPLOY_HOOK.txt
