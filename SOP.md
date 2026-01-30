@@ -362,6 +362,20 @@ Local → GitHub (main) → Plesk manual pull → Production
 **Крок 6:** Після стабільної роботи (1-2 дні):
 - Mode: Manual → Automatic (опційно)
 
+**Крок 7:** Налаштувати Post-Deploy Cleanup (видалення технічних файлів):
+1. Plesk → Git → Additional Settings → "Actions after deploy"
+2. Додати команду:
+   ```bash
+   rm -f PROJECT.md README.md SOP.md SERVER_RULES.md docker-compose.yml wp-config-local.php php.ini .gitignore .gitattributes && rm -rf docs/ && echo "✓ Cleanup OK"
+   ```
+3. Ця команда автоматично видалить технічні файли після кожного deploy
+4. Файли залишаються в Git, але не потраплять на production
+
+**Чому це потрібно:**
+- `.gitignore` контролює тільки `git add/commit`
+- При `git pull/deploy` Plesk витягує **всі** файли з репозиторію
+- Post-deploy hook автоматично чистить production після кожного deployment
+
 ### 5.3 Post-Deploy Checklist
 
 **Після кожного deploy:**

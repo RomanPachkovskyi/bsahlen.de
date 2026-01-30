@@ -1,0 +1,23 @@
+# =============================================================================
+# Git Export/Archive Rules (для deployment)
+# =============================================================================
+#
+# Ці файли НЕ включаються при git archive або git export
+# Використовується для виключення технічних файлів з production deployment
+#
+
+# Technical documentation (NOT for production)
+/PROJECT.md export-ignore
+/README.md export-ignore
+/SOP.md export-ignore
+/SERVER_RULES.md export-ignore
+/docs/ export-ignore
+
+# Development files (NOT for production)
+/docker-compose.yml export-ignore
+/wp-config-local.php export-ignore
+/php.ini export-ignore
+
+# Git files (NOT for production)
+/.gitignore export-ignore
+/.gitattributes export-ignore

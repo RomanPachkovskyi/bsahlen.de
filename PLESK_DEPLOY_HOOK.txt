@@ -1,0 +1,42 @@
+=============================================================================
+PLESK GIT POST-DEPLOY HOOK - Cleanup Commands
+=============================================================================
+
+Щоб автоматично видаляти технічні файли після кожного git deploy:
+
+1. Plesk -> Domains -> [your-domain] -> Git
+2. Repository Settings -> "Additional deploy actions" (або "Actions after deploy")
+3. Додати наступні команди:
+
+-----------------------------------------------------------------------------
+КОМАНДИ ДЛЯ PLESK POST-DEPLOY HOOK:
+-----------------------------------------------------------------------------
+
+# Remove technical documentation
+rm -f PROJECT.md README.md SOP.md SERVER_RULES.md
+rm -rf docs/
+
+# Remove development files
+rm -f docker-compose.yml wp-config-local.php php.ini
+
+# Remove git meta files (optional)
+rm -f .gitignore .gitattributes
+
+# Success message
+echo "✓ Production cleanup completed"
+
+-----------------------------------------------------------------------------
+АБО одним рядком (якщо Plesk не підтримує багаторядкові команди):
+-----------------------------------------------------------------------------
+
+rm -f PROJECT.md README.md SOP.md SERVER_RULES.md docker-compose.yml wp-config-local.php php.ini .gitignore .gitattributes && rm -rf docs/ && echo "✓ Production cleanup completed"
+
+-----------------------------------------------------------------------------
+
+ВАЖЛИВО:
+- Ці команди виконуються ПІСЛЯ git pull/checkout
+- Файли видаляються тільки на production, в Git вони залишаються
+- Cleanup автоматичний при кожному deploy
+- Якщо щось піде не так - файли можна видалити вручну через File Manager
+
+=============================================================================
