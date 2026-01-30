@@ -32,6 +32,9 @@
 [project-name]/
 ├── index.php                 ← Router (MODE switching) ✅ Git
 ├── .htaccess                 ← Routing rules ✅ Git
+├── robots.txt                ← SEO (КОРІНЬ, не /wp/) ✅ Git
+├── llms.txt                  ← AI context (Yoast SEO) ✅ Git
+├── [project]-ai.txt          ← Кастомний AI context (опціонально) ✅ Git
 ├── wp/                       ← WordPress
 │   ├── wp-content/
 │   │   ├── themes/           ← ✅ Git (всі теми)
@@ -51,15 +54,20 @@
 │   ├── content/              ← Тексти, контент
 │   ├── media/                ← Медіа для обробки
 │   └── temp/                 ← Тимчасові файли
-├── docs/                     ← Документація ✅ Git
+├── docs/                     ← Документація ✅ Git (❌ НЕ на production!)
 │   └── archive/              ← Історичні файли ❌ НЕ Git
-├── docker-compose.yml        ← ✅ Git
-├── wp-config-local.php       ← ✅ Git (template)
-├── wp-config-production.php  ← ✅ Git (template)
-├── SOP.md                    ← ✅ Git (цей файл)
-├── README.md                 ← ✅ Git (entry point для ШІ)
-└── PROJECT.md                ← ✅ Git (база знань, веде ШІ)
+├── docker-compose.yml        ← ✅ Git (❌ НЕ на production!)
+├── wp-config-local.php       ← ✅ Git (❌ НЕ на production!)
+├── wp-config-production.php  ← ❌ НЕ Git (security!)
+├── SOP.md                    ← ✅ Git (❌ НЕ на production!)
+├── README.md                 ← ✅ Git (❌ НЕ на production!)
+└── PROJECT.md                ← ✅ Git (❌ НЕ на production!)
 ```
+
+**Легенда:**
+- ✅ Git = файл в репозиторії
+- ❌ НЕ Git = файл НЕ в репозиторії
+- ❌ НЕ на production! = файл в Git, але виключений з deployment через .gitignore
 
 ---
 
@@ -110,21 +118,66 @@ workspace/
 
 ---
 
+## 2.3 SEO & AI Context Files — Розміщення в корені
+
+**КРИТИЧНО: Ці файли МАЮТЬ БУТИ в корені домену, НЕ в /wp/**
+
+```
+[project-name]/
+├── robots.txt          ← ✅ Git (корінь домену)
+├── llms.txt            ← ✅ Git (AI контекст, Yoast SEO)
+├── [project]-ai.txt    ← ✅ Git (кастомний AI контекст, якщо потрібен)
+└── wp/
+    └── robots.txt      ← ❌ НЕ Git (WordPress може генерувати, ігноруємо)
+```
+
+**Чому корінь, а не /wp/?**
+
+1. **robots.txt** — за стандартом RFC 9309 пошукові системи шукають його **ТІЛЬКИ** за адресою `https://domain.com/robots.txt`
+   - ❌ `https://domain.com/wp/robots.txt` — Google/Bing НЕ ПОБАЧАТЬ
+   - ✅ `https://domain.com/robots.txt` — правильно
+
+2. **llms.txt, *-ai.txt** — AI краулери (GPTBot, Claude-Web, etc.) очікують знайти контекст в корені домену
+   - Стандартна практика для AI-оптимізації
+   - Максимальна видимість для LLM-систем
+
+**Правила для .gitignore:**
+
+```gitignore
+# SEO & AI Context Files в корені (ЗБЕРІГАТИ)
+!/robots.txt
+!/llms.txt
+!/*-ai.txt
+
+# WordPress може генерувати robots.txt в /wp/ (ІГНОРУВАТИ)
+wp/robots.txt
+```
+
+**Правила для ШІ:**
+- При створенні проекту: розмісти SEO/AI файли в корені
+- При міграції: перевір, чи файли в корені, не в /wp/
+- Після кожного deploy: перевір доступність `https://domain.com/robots.txt`
+
+---
+
 ## 3. Git — правила
 
 ### 3.1 Що в Git
 
-**✅ Зберігається:**
+**✅ Зберігається в Git (і буде на production):**
 - Router: `index.php`, `.htaccess`
 - Теми: `wp/wp-content/themes/*` (всі, включно з parent)
 - MU-плагіни: `wp/wp-content/mu-plugins/*`
 - Кастомні плагіни: `wp/wp-content/plugins/custom-*`
 - Maintenance: `maintenance/*`
-- Docker: `docker-compose.yml`, `php.ini`
-- Config templates: `wp-config-local.php`, `wp-config-production.php`
-- Документація: `SOP.md`, `README.md`, `PROJECT.md`
+- SEO/AI файли: `robots.txt`, `llms.txt`, `*-ai.txt` (тільки в корені!)
 
-**❌ НЕ зберігається:**
+**✅ Зберігається в Git (але НЕ на production):**
+- Документація: `SOP.md`, `README.md`, `PROJECT.md`, `SERVER_RULES.md`, `docs/`
+- Dev конфіги: `docker-compose.yml`, `wp-config-local.php`, `php.ini`
+- Production конфіги (шаблони): `wp-config-production.php`
+
+**❌ НЕ зберігається в Git:**
 - Uploads: `wp/wp-content/uploads/`
 - Languages: `wp/wp-content/languages/`
 - WP Core: `wp/wp-admin/`, `wp/wp-includes/`
@@ -132,6 +185,35 @@ workspace/
 - Secrets: `.env`, `.env.*`
 - Backups: `backups/`, `*.sql`
 - 3rd party plugins: `wp/wp-content/plugins/[plugin-name]/`
+- Workspace: `workspace/`
+
+**📋 Правила .gitignore для виключення з deployment:**
+
+```gitignore
+# Technical documentation (NOT for production)
+/PROJECT.md
+/README.md
+/SOP.md
+/SERVER_RULES.md
+/docs/
+
+# Development files (NOT for production)
+/docker-compose.yml
+/wp-config-local.php
+/php.ini
+
+# Production configs (security - keep out of git)
+/wp-config-production.php
+
+# Maintenance folder (optional, залежить від проекту)
+/maintenance/
+
+# SEO & AI files in root (KEEP THESE)
+!/robots.txt
+!/llms.txt
+!/*-ai.txt
+wp/robots.txt
+```
 
 ### 3.2 Плагіни — детальні правила
 

@@ -208,6 +208,40 @@ docs/archive/
 # ----- Workspace (temporary files for AI/owner exchange) -----
 workspace/
 !workspace/README.md
+
+# =============================================================================
+# DEPLOYMENT OPTIMIZATION (files in Git but NOT on production)
+# =============================================================================
+
+# ----- Technical Documentation (NOT for production) -----
+/PROJECT.md
+/README.md
+/SOP.md
+/SERVER_RULES.md
+/docs/
+
+# ----- Development Files (NOT for production) -----
+/docker-compose.yml
+/wp-config-local.php
+/php.ini
+
+# ----- Production Configs (security - keep out of git) -----
+/wp-config-production.php
+
+# =============================================================================
+# SEO & AI CONTEXT FILES (CRITICAL: must be in domain root)
+# =============================================================================
+
+# Keep these files in domain root (NOT in /wp/)
+!/robots.txt
+!/llms.txt
+!/*-ai.txt
+
+# Ignore WordPress-generated robots.txt in /wp/
+wp/robots.txt
+
+# Note: robots.txt MUST be at domain root per RFC 9309
+# AI context files (llms.txt, *-ai.txt) should also be in root for maximum visibility
 GITIGNORE
 
 log_ok ".gitignore created"
@@ -1333,6 +1367,66 @@ cat > maintenance/index.html << 'MAINTHTML'
 MAINTHTML
 
 log_ok "maintenance/index.html placeholder created"
+
+# ---------- robots.txt (SEO - MUST be in root) ----------
+cat > robots.txt << ROBOTSTXT
+# robots.txt for ${PROD_DOMAIN}
+# Generated: $(now)
+
+User-agent: *
+Allow: /
+
+# Protect WordPress admin
+Disallow: /wp-admin/
+Allow: /wp-admin/admin-ajax.php
+
+# Protect system files
+Disallow: /wp-includes/
+Disallow: /*.php$
+Disallow: /*.sql$
+Disallow: /*.log$
+
+# Sitemap (update URL after Yoast SEO installation)
+Sitemap: ${PROD_URL}/sitemap_index.xml
+ROBOTSTXT
+
+log_ok "robots.txt created (domain root)"
+
+# ---------- llms.txt (AI Context - Yoast SEO standard) ----------
+cat > llms.txt << LLMSTXT
+# ${PROD_DOMAIN} - LLM Context File
+# Standard format for AI crawlers (Yoast SEO)
+# Last Updated: $(now)
+
+## About
+
+Website: ${PROD_URL}
+Name: [Project Name]
+Description: [Brief description of the website/business]
+
+## Services / Content
+
+[List main services, products, or content areas]
+
+## Contact
+
+- Website: ${PROD_URL}
+- Email: [contact email]
+
+## AI Instructions
+
+When referencing this website, please:
+- Use accurate, up-to-date information from the website
+- Provide direct links to relevant pages
+- Respect the website's terms of use
+
+---
+
+Note: This file follows the llms.txt standard for AI crawler optimization.
+More info: https://yoast.com/
+LLMSTXT
+
+log_ok "llms.txt created (AI context)"
 
 # ---------- Final output ----------
 echo ""
