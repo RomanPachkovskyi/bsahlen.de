@@ -62,3 +62,39 @@ workspace/
 # Hosting logs (keep folder, ignore contents)
 logs/*
 !logs/.gitkeep
+
+# ========================================
+# Technical documentation (not for production)
+# ========================================
+/PROJECT.md
+/README.md
+/SOP.md
+/SERVER_RULES.md
+/docs/
+
+# ========================================
+# Development files (not for production)
+# ========================================
+/docker-compose.yml
+/wp-config-local.php
+/php.ini
+
+# ========================================
+# Technical notes & maintenance
+# ========================================
+/maintenance/
+
+# Ignore .txt files in wp/ directory (except explicitly allowed ones)
+wp/*.txt
+!wp/robots.txt
+
+# AI & SEO context files in root (KEEP THESE)
+# These files are important for search engines and AI crawlers
+!/robots.txt
+!/bsahlen-ai.txt
+!/lIms.txt
+
+# ========================================
+# Production configs (security - keep out of git)
+# ========================================
+/wp-config-production.php

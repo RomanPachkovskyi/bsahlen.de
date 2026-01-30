@@ -101,6 +101,7 @@ Site is public and operational.
 
 | Date | Change | By |
 |------|--------|----|
+| 2026-01-29 | DB optimization: removed revisions/trash, cleared transients/cache; new production-ready DB export after cleanup | AI |
 | 2026-01-29 | Fixed missing header logo (used correct custom_logo ID in theme template) | AI |
 | 2026-01-29 | Aggressive media cleanup: removed uploads/2025/02 and /2025/03 + DB references | AI |
 | 2026-01-29 | Prepared production-ready DB export (search-replace localhost → https://bsahlen.de) | AI |
@@ -121,6 +122,7 @@ Site is public and operational.
 
 | Date | Direction | Reason | Notes |
 |------|-----------|--------|-------|
+| 2026-01-29 | Local → Production | Production-ready DB export after DB optimization | 122 replacements, file `backups/production_ready_20260129_163303.sql` (pending import) |
 | 2026-01-29 | Local → Production | Prepared DB export after cleanup | 419 replacements, file `backups/production_ready_20260129_161323.sql` (pending import) |
 | 2026-01-29 | Local → Production | Deploy service images + workspace | 243 replacements, 114MB |
 | 2026-01-28 | Local → Production | Deploy local changes | 228 replacements, 112MB |
