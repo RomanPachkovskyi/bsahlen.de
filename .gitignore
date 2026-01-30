@@ -98,3 +98,9 @@ wp/*.txt
 # Production configs (security - keep out of git)
 # ========================================
 /wp-config-production.php
+
+# ========================================
+# Deployment helpers (not needed in git)
+# ========================================
+/.gitattributes
+/PLESK_DEPLOY_HOOK.txt
